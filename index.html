@@ -3399,6 +3399,8 @@ body[data-weather="drought"] .scene-sun {
   min-height: 0;
   padding: 10px 12px 12px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background:
     radial-gradient(90% 60% at 50% 0%, rgba(221, 233, 202, 0.22), transparent 65%),
     #f7f2e5;
@@ -5210,6 +5212,15 @@ body.lab-dragging {
     flex: 0 0 auto;
     flex-direction: column;
   }
+
+  /* On phones, keep the tube within one short scroll of the loop dock.
+     The incubator is still available, just moved below the sealing station. */
+  .lab-zone--clean { order: 1; }
+  .lab-zone--flame { order: 2; }
+  .lab-zone--tube { order: 3; }
+  .lab-zone--dish { order: 4; }
+  .lab-zone--seal { order: 5; }
+  .lab-zone--incubator { order: 6; }
 
   .lab-zone--flame,
   .lab-zone--incubator,
@@ -15537,8 +15548,12 @@ body.main-menu-open .scene {
   let dishDrag = null;
   let dishGhost = null;
   let streakDraw = null;
+  let loopScrollFrame = null;
+  let loopPointerX = 0;
+  let loopPointerY = 0;
 
   function cleanupLabTransientState() {
+    stopLoopAutoScroll();
     if (dishGhost) {
       dishGhost.remove();
       dishGhost = null;
@@ -16111,6 +16126,71 @@ body.main-menu-open .scene {
     return false;
   }
 
+  function stopLoopAutoScroll() {
+    if (loopScrollFrame !== null) {
+      cancelAnimationFrame(loopScrollFrame);
+      loopScrollFrame = null;
+    }
+  }
+
+  function loopAutoScrollTick() {
+    loopScrollFrame = null;
+    if (!loopDrag || !game.lab.dragging) return;
+
+    const workspace = labScene.closest('.lab-workspace');
+    if (!workspace) return;
+    const rect = workspace.getBoundingClientRect();
+    if (rect.height <= 0 || rect.width <= 0) return;
+
+    const stage = game.lab.stage;
+    const targetDrop = stage === 3 ? (game.lab.sampled ? 'dish' : 'sample') : null;
+    const currentDrop = dropZoneAt(loopPointerX, loopPointerY);
+    if (currentDrop && (!targetDrop || currentDrop === targetDrop)) {
+      game.lab.hoverDrop = currentDrop;
+      highlightDrop(currentDrop);
+      loopScrollFrame = requestAnimationFrame(loopAutoScrollTick);
+      return;
+    }
+
+    const edge = Math.min(104, Math.max(54, rect.height * 0.16));
+    let direction = 0;
+    if (loopPointerY > rect.bottom - edge) {
+      const intensity = clamp((loopPointerY - (rect.bottom - edge)) / edge, 0, 1);
+      direction = 2 + intensity * 8;
+    } else if (loopPointerY < rect.top + edge) {
+      const intensity = clamp(((rect.top + edge) - loopPointerY) / edge, 0, 1);
+      direction = -(2 + intensity * 8);
+    }
+
+    if (direction !== 0) {
+      const maxScroll = Math.max(0, workspace.scrollHeight - workspace.clientHeight);
+      let scrollLimit = maxScroll;
+      // On the sampling step, stop scrolling when the tube is fully in view.
+      // Otherwise the finger can stay at the viewport bottom while the tube
+      // (and its small sample zone) slides past above the visible area.
+      if (direction > 0 && stage === 3) {
+        const target = game.lab.sampled ? petriDish : sampleZone;
+        const targetRect = target.getBoundingClientRect();
+        const desired = workspace.scrollTop + (targetRect.top - rect.top) - 12;
+        scrollLimit = Math.min(maxScroll, Math.max(0, desired));
+      }
+      const before = workspace.scrollTop;
+      workspace.scrollTop = clamp(workspace.scrollTop + direction, 0, scrollLimit);
+      if (workspace.scrollTop !== before) {
+        const drop = dropZoneAt(loopPointerX, loopPointerY);
+        game.lab.hoverDrop = drop;
+        highlightDrop(drop);
+      }
+    }
+
+    loopScrollFrame = requestAnimationFrame(loopAutoScrollTick);
+  }
+
+  function startLoopAutoScroll() {
+    stopLoopAutoScroll();
+    loopScrollFrame = requestAnimationFrame(loopAutoScrollTick);
+  }
+
   function startLoopDrag(event) {
     const lab = game.lab;
     if (labModal.hidden) return;
@@ -16131,6 +16211,8 @@ body.main-menu-open .scene {
       offsetX: event.clientX - loopRect.left,
       offsetY: event.clientY - loopRect.top
     };
+    loopPointerX = event.clientX;
+    loopPointerY = event.clientY;
 
     lab.dragging = true;
     lab.hoverDrop = null;
@@ -16141,6 +16223,7 @@ body.main-menu-open .scene {
     document.body.appendChild(inoculationLoop);
     document.body.classList.add('lab-dragging');
     moveLoopTo(event.clientX, event.clientY, loopDrag.offsetX, loopDrag.offsetY);
+    startLoopAutoScroll();
 
     try {
       inoculationLoop.setPointerCapture(event.pointerId);
@@ -16152,6 +16235,8 @@ body.main-menu-open .scene {
   function moveLoopDrag(event) {
     if (!loopDrag || !game.lab.dragging) return;
     event.preventDefault();
+    loopPointerX = event.clientX;
+    loopPointerY = event.clientY;
     moveLoopTo(event.clientX, event.clientY, loopDrag.offsetX, loopDrag.offsetY);
     const drop = dropZoneAt(event.clientX, event.clientY);
     game.lab.hoverDrop = drop;
@@ -16161,6 +16246,7 @@ body.main-menu-open .scene {
   function endLoopDrag(event) {
     if (!loopDrag || !game.lab.dragging) return;
 
+    stopLoopAutoScroll();
     const drop = dropZoneAt(event.clientX, event.clientY);
     game.lab.hoverDrop = drop;
     const handled = handleLoopDrop(drop);
