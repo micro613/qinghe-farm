@@ -4483,6 +4483,15 @@ body[data-weather="drought"] .scene-sun {
   cursor: crosshair;
 }
 
+.petri-dish.is-draggable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.petri-dish.is-draggable:active {
+  cursor: grabbing;
+}
+
 .petri-dish.is-placed {
   opacity: 0.35;
   filter: grayscale(0.5);
@@ -11795,6 +11804,7 @@ body.main-menu-open .scene {
       dragging: false,
       hoverDrop: null,
       lastProgressAt: 0,
+      autoScrolledStage: 0,
       sterilizing: false
     },
     incubator: {
@@ -15551,9 +15561,13 @@ body.main-menu-open .scene {
   let loopScrollFrame = null;
   let loopPointerX = 0;
   let loopPointerY = 0;
+  let dishScrollFrame = null;
+  let dishPointerX = 0;
+  let dishPointerY = 0;
 
   function cleanupLabTransientState() {
     stopLoopAutoScroll();
+    stopDishAutoScroll();
     if (dishGhost) {
       dishGhost.remove();
       dishGhost = null;
@@ -15837,6 +15851,7 @@ body.main-menu-open .scene {
         ? '把接种环拖到培养皿，然后按 1→2→3→4 画出 Z 形。'
         : '完成取菌后，把接种环拖到培养皿，再按 Z 形划线。';
     petriDish.classList.toggle('is-drawing', Boolean(lab.dishActive) && !lab.streaked && stage === 3);
+    petriDish.classList.toggle('is-draggable', stage === 5 && !lab.dishInIncubator);
     petriDish.classList.toggle('is-placed', stage === 6);
     inoculationLoop.classList.toggle('is-parked', Boolean(lab.dishActive) && !lab.streaked);
 
@@ -15884,6 +15899,23 @@ body.main-menu-open .scene {
         if (!game.lab.dragging && !game.lab.dishActive) dockLoop();
       }, 0);
     }
+
+    if (stage === 5 && !lab.dishInIncubator && !lab.dragging && lab.autoScrolledStage !== 5) {
+      lab.autoScrolledStage = 5;
+      window.setTimeout(() => scrollLabZoneIntoView('.lab-zone--dish'), 80);
+    } else if (stage !== 5) {
+      lab.autoScrolledStage = 0;
+    }
+  }
+
+  function scrollLabZoneIntoView(selector) {
+    const workspace = labScene.closest('.lab-workspace');
+    const zone = $(selector, labScene);
+    if (!workspace || !zone) return;
+    const workspaceRect = workspace.getBoundingClientRect();
+    const zoneRect = zone.getBoundingClientRect();
+    const target = workspace.scrollTop + (zoneRect.top - workspaceRect.top) - 12;
+    workspace.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
   }
 
   function setLabStage(stage) {
@@ -16209,7 +16241,8 @@ body.main-menu-open .scene {
     loopDrag = {
       pointerId: event.pointerId,
       offsetX: event.clientX - loopRect.left,
-      offsetY: event.clientY - loopRect.top
+      offsetY: event.clientY - loopRect.top,
+      scrollStarted: false
     };
     loopPointerX = event.clientX;
     loopPointerY = event.clientY;
@@ -16223,7 +16256,6 @@ body.main-menu-open .scene {
     document.body.appendChild(inoculationLoop);
     document.body.classList.add('lab-dragging');
     moveLoopTo(event.clientX, event.clientY, loopDrag.offsetX, loopDrag.offsetY);
-    startLoopAutoScroll();
 
     try {
       inoculationLoop.setPointerCapture(event.pointerId);
@@ -16237,6 +16269,10 @@ body.main-menu-open .scene {
     event.preventDefault();
     loopPointerX = event.clientX;
     loopPointerY = event.clientY;
+    if (!loopDrag.scrollStarted) {
+      loopDrag.scrollStarted = true;
+      startLoopAutoScroll();
+    }
     moveLoopTo(event.clientX, event.clientY, loopDrag.offsetX, loopDrag.offsetY);
     const drop = dropZoneAt(event.clientX, event.clientY);
     game.lab.hoverDrop = drop;
@@ -16425,12 +16461,15 @@ body.main-menu-open .scene {
     event.preventDefault();
 
     dishDrag = { pointerId: event.pointerId };
+    dishPointerX = event.clientX;
+    dishPointerY = event.clientY;
     const ghost = document.createElement('div');
     ghost.className = 'dish-ghost';
     ghost.style.left = `${event.clientX}px`;
     ghost.style.top = `${event.clientY}px`;
     document.body.appendChild(ghost);
     dishGhost = ghost;
+    startDishAutoScroll();
 
     try {
       petriDish.setPointerCapture(event.pointerId);
@@ -16439,9 +16478,73 @@ body.main-menu-open .scene {
     }
   }
 
+  function stopDishAutoScroll() {
+    if (dishScrollFrame !== null) {
+      cancelAnimationFrame(dishScrollFrame);
+      dishScrollFrame = null;
+    }
+  }
+
+  function dishAutoScrollTick() {
+    dishScrollFrame = null;
+    if (!dishDrag || !dishGhost) return;
+
+    const workspace = labScene.closest('.lab-workspace');
+    if (!workspace) return;
+    const rect = workspace.getBoundingClientRect();
+    if (rect.height <= 0 || rect.width <= 0) return;
+
+    const overIncubator = document
+      .elementFromPoint(dishPointerX, dishPointerY)
+      ?.closest('[data-drop="incubator"]');
+    if (overIncubator) {
+      incubatorBay.classList.add('is-drop-target');
+      dishScrollFrame = requestAnimationFrame(dishAutoScrollTick);
+      return;
+    }
+    incubatorBay.classList.remove('is-drop-target');
+
+    const edge = Math.min(104, Math.max(54, rect.height * 0.16));
+    let direction = 0;
+    if (dishPointerY > rect.bottom - edge) {
+      const intensity = clamp((dishPointerY - (rect.bottom - edge)) / edge, 0, 1);
+      direction = 2 + intensity * 8;
+    } else if (dishPointerY < rect.top + edge) {
+      const intensity = clamp(((rect.top + edge) - dishPointerY) / edge, 0, 1);
+      direction = -(2 + intensity * 8);
+    }
+
+    if (direction !== 0) {
+      const maxScroll = Math.max(0, workspace.scrollHeight - workspace.clientHeight);
+      let scrollLimit = maxScroll;
+      if (direction > 0) {
+        const targetRect = incubatorBay.getBoundingClientRect();
+        const desired = workspace.scrollTop + (targetRect.top - rect.top) - 12;
+        scrollLimit = Math.min(maxScroll, Math.max(workspace.scrollTop, desired));
+      }
+      const before = workspace.scrollTop;
+      workspace.scrollTop = clamp(workspace.scrollTop + direction, 0, scrollLimit);
+      if (workspace.scrollTop !== before) {
+        const nextOver = document
+          .elementFromPoint(dishPointerX, dishPointerY)
+          ?.closest('[data-drop="incubator"]');
+        incubatorBay.classList.toggle('is-drop-target', Boolean(nextOver));
+      }
+    }
+
+    dishScrollFrame = requestAnimationFrame(dishAutoScrollTick);
+  }
+
+  function startDishAutoScroll() {
+    stopDishAutoScroll();
+    dishScrollFrame = requestAnimationFrame(dishAutoScrollTick);
+  }
+
   function moveDishDrag(event) {
     if (!dishDrag || !dishGhost) return;
     event.preventDefault();
+    dishPointerX = event.clientX;
+    dishPointerY = event.clientY;
     dishGhost.style.left = `${event.clientX}px`;
     dishGhost.style.top = `${event.clientY}px`;
     const over = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-drop="incubator"]');
@@ -16451,6 +16554,7 @@ body.main-menu-open .scene {
   function endDishDrag(event) {
     if (!dishDrag) return;
     event.preventDefault();
+    stopDishAutoScroll();
 
     const over = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-drop="incubator"]');
     const capacityOk = capacityLeft() > 0;
@@ -16927,10 +17031,11 @@ body.main-menu-open .scene {
     lab.dragging = false;
     lab.hoverDrop = null;
     lab.lastProgressAt = performance.now();
+    lab.autoScrolledStage = 0;
 
     inoculationLoop.classList.remove('is-dragging', 'is-hot', 'is-cooled', 'is-sampled', 'is-parked');
     document.body.classList.remove('lab-dragging');
-    petriDish.classList.remove('is-placed', 'is-drawing');
+    petriDish.classList.remove('is-placed', 'is-drawing', 'is-draggable');
     clearDropHighlights();
     clearStreakCanvas();
     if (labModal.hidden === false) {
@@ -16943,6 +17048,7 @@ body.main-menu-open .scene {
 
   function openLab() {
     openLayer(labModal, { trigger: $('#labBtn') });
+    if (game.lab.stage === 5) game.lab.autoScrolledStage = 0;
     window.setTimeout(() => {
       renderLabUI();
       updateLabTempUI();
