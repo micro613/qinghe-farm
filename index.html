@@ -11432,6 +11432,45 @@ body.main-menu-open .scene {
     }
   };
 
+  const RAIN_LEVELS = {
+    light: { key: 'light', label: '小雨', icon: '🌦️', range: [8, 14] },
+    moderate: { key: 'moderate', label: '中雨', icon: '🌧️', range: [16, 24] },
+    heavy: { key: 'heavy', label: '大雨', icon: '🌧️', range: [30, 40] },
+    storm: { key: 'storm', label: '暴雨', icon: '⛈️', range: [42, 52] }
+  };
+
+  function pickRainLevel() {
+    const roll = Math.random();
+    if (roll < 0.28) return 'light';
+    if (roll < 0.78) return 'moderate';
+    return 'heavy';
+  }
+
+  const SNOW_LEVELS = {
+    light: { key: 'light', label: '小雪', icon: '🌨️', range: [2, 5], state: [-1, 0] },
+    moderate: { key: 'moderate', label: '中雪', icon: '🌨️', range: [6, 10], state: [-1, -1] },
+    heavy: { key: 'heavy', label: '大雪', icon: '❄️', range: [11, 16], state: [-2, -1] }
+  };
+
+  function pickSnowLevel() {
+    const roll = Math.random();
+    if (roll < 0.35) return 'light';
+    if (roll < 0.8) return 'moderate';
+    return 'heavy';
+  }
+
+  const WEATHER_EFFECT_RANGES = {
+    sunny: { water: [-10, -6], state: [0, 0] },
+    cloudy: { water: [-5, -1], state: [0, 0] },
+    storm: { state: [-3, -1] },
+    heat: { water: [-17, -11], state: [-4, -2] },
+    drought: { water: [-19, -11], state: [-4, -2] },
+    frost: { water: [-4, -2], state: [-4, -2] },
+    blizzard: { water: [10, 20], state: [-5, -3] },
+    freezing_rain: { water: [5, 11], state: [-5, -3] },
+    hail: { water: [-3, -1], state: [-4, -2] }
+  };
+
   const SEASONS = {
     spring: { name: '春季', emoji: '🌱', months: [3, 4, 5] },
     summer: { name: '夏季', emoji: '🌻', months: [6, 7, 8] },
@@ -11570,6 +11609,14 @@ body.main-menu-open .scene {
     const overlayKey = allowOverlay ? pickWeatherOverlay(key, season.key) : null;
     const overlayDefinition = overlayKey ? WEATHERS[overlayKey] : null;
 
+    const rainLevelKey = key === 'rain' ? pickRainLevel() : key === 'storm' ? 'storm' : null;
+    const rainMeta = rainLevelKey ? RAIN_LEVELS[rainLevelKey] : null;
+    const rainAmount = rainMeta ? randomInt(rainMeta.range[0], rainMeta.range[1]) : null;
+    const snowLevelKey = key === 'snow' ? pickSnowLevel() : null;
+    const snowMeta = snowLevelKey ? SNOW_LEVELS[snowLevelKey] : null;
+    const snowAmount = snowMeta ? randomInt(snowMeta.range[0], snowMeta.range[1]) : null;
+    const effectRange = WEATHER_EFFECT_RANGES[key] || null;
+
     const baseMin = seasonal.temp[0];
     const baseMax = seasonal.temp[1];
     const dailyMinRaw = randomInt(baseMin - 2, baseMin + 2);
@@ -11578,11 +11625,17 @@ body.main-menu-open .scene {
     const dailyMaxTemp = Math.max(dailyMinRaw, dailyMaxRaw);
     const temperature = randomInt(baseMin, baseMax);
 
-    let waterDelta = definition.waterDelta;
+    let waterDelta = rainAmount ?? snowAmount ?? (
+      effectRange?.water ? randomInt(effectRange.water[0], effectRange.water[1]) : definition.waterDelta
+    );
     if (overlayKey === 'sunny' && overlayDefinition) waterDelta += overlayDefinition.waterDelta;
     if (key === 'blizzard' && overlayKey === 'drought') waterDelta = definition.waterDelta / 2;
 
-    const baseLabel =
+    let stateDelta = definition.stateDelta;
+    if (effectRange?.state) stateDelta = randomInt(effectRange.state[0], effectRange.state[1]);
+    if (snowMeta) stateDelta = randomInt(snowMeta.state[0], snowMeta.state[1]);
+
+    let baseLabel =
       key === 'frost'
         ? season.key === 'spring'
           ? '晚霜冻'
@@ -11594,11 +11647,13 @@ body.main-menu-open .scene {
               ? '倒春寒雪'
               : '晚秋雪'
           : definition.label;
+    if (rainMeta) baseLabel = rainMeta.label;
+    if (snowMeta) baseLabel = `${baseLabel}·${snowMeta.label}`;
 
     let comboLabel = baseLabel;
     if (overlayKey === 'sunny') {
-      if (key === 'snow') comboLabel = '太阳雪';
-      else if (key === 'rain') comboLabel = '太阳雨';
+      if (key === 'snow') comboLabel = `太阳雪·${snowMeta.label}`;
+      else if (key === 'rain') comboLabel = `太阳雨·${rainMeta.label}`;
       else if (key === 'hail') comboLabel = '晴雹';
     } else if (overlayKey === 'drought' && key === 'blizzard') {
       comboLabel = '暴雪干旱';
@@ -11622,8 +11677,9 @@ body.main-menu-open .scene {
             : '冬季最低温低于 -5℃';
     }
 
-    const weatherIcon =
-      key === 'snow' && (season.key === 'spring' || season.key === 'autumn')
+    const weatherIcon = rainMeta
+      ? rainMeta.icon
+      : key === 'snow' && (season.key === 'spring' || season.key === 'autumn')
         ? '🌨️'
         : definition.icon;
 
@@ -11634,6 +11690,14 @@ body.main-menu-open .scene {
       label: baseLabel,
       comboLabel,
       icon: weatherIcon,
+      rainLevel: rainLevelKey,
+      rainLevelLabel: rainMeta?.label || '',
+      rainAmount,
+      rainRange: rainMeta?.range || null,
+      snowLevel: snowLevelKey,
+      snowLevelLabel: snowMeta?.label || '',
+      snowAmount,
+      snowRange: snowMeta?.range || null,
       overlayKey,
       overlay: overlayKey,
       overlayIcon: overlayDefinition?.icon || '',
@@ -11647,7 +11711,7 @@ body.main-menu-open .scene {
       dailyMinTemp,
       dailyMaxTemp,
       waterDelta,
-      stateDelta: definition.stateDelta + (overlayKey === 'sunny' ? 0 : 0),
+      stateDelta,
       isDrought: Boolean(definition.isDrought || overlayKey === 'drought'),
       isExtreme: Boolean(definition.isExtreme || overlayDefinition?.isExtreme),
       lowTemp: dailyMinTemp <= 0,
@@ -14096,6 +14160,10 @@ body.main-menu-open .scene {
 
     analyzeInteractions();
 
+    // Every weather event has one shared base water change. Each plot only
+    // receives a small ±1% site variation, so the field stays coherent.
+    const weatherWaterBase = Number(weather.waterDelta) || 0;
+
     game.plots.forEach((plot) => {
       // Organic fertilizer slow release.
       if (plot.omReleaseDays > 0) {
@@ -14112,7 +14180,8 @@ body.main-menu-open .scene {
       }
 
       // Weather changes the soil moisture of every plot, crop or not.
-      plot.water = clamp(plot.water + weather.waterDelta);
+      const weatherWaterGain = weatherWaterBase + randomInt(-1, 1);
+      plot.water = clamp(plot.water + weatherWaterGain);
       if (plot.residueDays > 0) {
         plot.residueDays = Math.max(0, plot.residueDays - 1);
         if (plot.residueDays === 0) plot.residueName = '';
@@ -14502,10 +14571,11 @@ body.main-menu-open .scene {
 
     if (!springCold) {
       const rawWeatherDelta = Number(weather.stateDelta) || 0;
+      const weatherStateJitter = rawWeatherDelta < 0 ? randomInt(-1, 0) : 0;
       const weatherDelta =
-        rawWeatherDelta < 0 && isFrostWeather(weather)
+        (rawWeatherDelta < 0 && isFrostWeather(weather)
           ? rawWeatherDelta * frostMultiplier
-          : rawWeatherDelta;
+          : rawWeatherDelta) + weatherStateJitter;
       delta += weatherDelta;
     }
 
@@ -17953,7 +18023,7 @@ body.main-menu-open .scene {
     },
     {
       title: '天气与季节',
-      text: '同一天可能出现两种天气：晴天+雪=太阳雪，晴天+雨=太阳雨。四季温度不同：春 10–22℃、夏 ≥22℃、秋 10–22℃、冬 ≤10℃。夏季容易出现冰雹，冬季有暴雪和冻雨；冰雹会直接损伤作物，使品质和状态下降。冬小麦秋播出苗、分蘖越冬，0℃附近地上部近乎停止，根系仍缓慢生长并积累春化作用，返青后再快速长叶、大量分蘖。',
+      text: '同一天可能出现两种天气：晴天+雪=太阳雪，晴天+雨=太阳雨。四季温度不同：春 10–22℃、夏 ≥22℃、秋 10–22℃、冬 ≤10℃。夏季容易出现冰雹，冬季有暴雪和冻雨；冰雹会直接损伤作物，使品质和状态下降。降雨分小雨/中雨/大雨/暴雨，雪分小雪/中雪/大雪；晴天、阴天、高温、干旱、霜冻、冰雹、暴雪等天气的水分与状态影响也会在合理区间内波动，同一天各地块差异很小。冬小麦秋播出苗、分蘖越冬，0℃附近地上部近乎停止，根系仍缓慢生长并积累春化作用，返青后再快速长叶、大量分蘖。',
       target: '#weatherChip'
     },
     {
@@ -18780,12 +18850,14 @@ body.main-menu-open .scene {
       )
       .sort((a, b) => Number(b.dead) - Number(a.dead) || a.delta - b.delta || a.plotId - b.plotId);
 
+    const weatherWaterLine = weather
+      ? `${weather.isRain ? '田块净获水' : '土壤水分'}约 ${weather.waterDelta >= 0 ? '+' : ''}${fmt1(weather.waterDelta || 0)}% · 各地块 ±1%`
+      : '土壤水分数据不可用';
+
     const weatherLine = weather
       ? `${weatherIcons(weather)} <strong>${weather.comboLabel || weather.label || '天气'}</strong> · ${
           weather.dailyMinTemp ?? '?'
-        }~${weather.dailyMaxTemp ?? '?'}℃ · 土壤水分 ${
-          weather.waterDelta >= 0 ? '+' : ''
-        }${fmt1(weather.waterDelta || 0)}%/天 · 蒸腾 ×${fmt1(weather.transpiration || 1)} · 状态 ${
+        }~${weather.dailyMaxTemp ?? '?'}℃ · ${weatherWaterLine} · 蒸腾 ×${fmt1(weather.transpiration || 1)} · 状态 ${
           weather.stateDelta >= 0 ? '+' : ''
         }${fmt1(weather.stateDelta || 0)}${
           weather.isFrozen ? ' · 冻害条件' : ''
