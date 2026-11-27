@@ -3192,6 +3192,223 @@ body[data-weather="drought"] .scene-sun {
   font-size: 0.48rem;
 }
 
+.profile-honors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.profile-honor {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid #e3dccb;
+  border-radius: 999px;
+  background: #f8f5e9;
+  color: #8b9480;
+  opacity: 0.72;
+}
+
+.profile-honor.is-unlocked {
+  color: #6c5422;
+  border-color: #dfc476;
+  background: linear-gradient(135deg, #fff6d8, #f4e5b4);
+  opacity: 1;
+  box-shadow: 0 3px 9px -7px #8f6a1e;
+}
+
+.profile-honor-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.profile-honor strong,
+.profile-honor small {
+  display: block;
+  line-height: 1.15;
+}
+
+.profile-honor strong {
+  font-size: 0.5rem;
+  font-weight: 800;
+}
+
+.profile-honor small {
+  margin-top: 1px;
+  font-size: 0.42rem;
+  opacity: 0.82;
+}
+
+.friend-add-row {
+  display: flex;
+  gap: 6px;
+  margin: 2px 0 5px;
+}
+
+.friend-add-row input {
+  min-width: 0;
+  flex: 1;
+  padding: 7px 9px;
+  color: #314b37;
+  font: inherit;
+  font-size: 0.58rem;
+  background: #fffdf6;
+  border: 1px solid #ded8c8;
+  border-radius: 8px;
+  outline: none;
+}
+
+.friend-add-row input:focus {
+  border-color: #9db67f;
+  box-shadow: 0 0 0 2px rgba(126, 158, 94, 0.16);
+}
+
+.friend-add-row button,
+.friend-request button,
+.profile-friend-remove {
+  cursor: pointer;
+  color: #f9f5e8;
+  font-family: inherit;
+  font-size: 0.5rem;
+  font-weight: 800;
+  background: #3f6b46;
+  border: 1px solid #31563a;
+  border-radius: 8px;
+  padding: 6px 9px;
+}
+
+.friend-add-row button:disabled,
+.friend-request button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.friend-status {
+  min-height: 0.8rem;
+  margin: 3px 0 5px;
+  color: #8a9481;
+  font-size: 0.48rem;
+  line-height: 1.4;
+}
+
+.friend-status.is-ok { color: #527d3b; }
+.friend-status.is-error { color: #a54b3f; }
+
+.friend-requests {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 7px;
+}
+
+.friend-request {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: 1px dashed #e2c98e;
+  border-radius: 9px;
+  background: #fff9e7;
+  color: #705a2c;
+  font-size: 0.5rem;
+}
+
+.friend-request > span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend-request button {
+  padding: 4px 7px;
+  font-size: 0.46rem;
+}
+
+.friend-request button[data-friend-reject] {
+  color: #786f62;
+  background: #f4f0e6;
+  border-color: #ddd5c6;
+}
+
+.friend-request--sent {
+  border-style: solid;
+  border-color: #e5ddcb;
+  background: #faf7ee;
+  color: #7d8471;
+}
+
+.friend-request--sent small {
+  margin-left: auto;
+  color: #a39b88;
+  font-size: 0.42rem;
+  white-space: nowrap;
+}
+
+.profile-friend-remove {
+  margin-left: 2px;
+  padding: 4px 7px;
+  color: #8d7567;
+  background: #f7f1e8;
+  border-color: #e4d8c9;
+  font-size: 0.44rem;
+}
+
+.profile-friends-empty {
+  margin: 2px 0;
+  color: #8a9481;
+  font-size: 0.52rem;
+  line-height: 1.5;
+}
+
+/* ---- cloud save ---- */
+.save-cloud-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #ded8c8;
+}
+
+.save-cloud-btn {
+  cursor: pointer;
+  padding: 6px 10px;
+  color: #f9f5e8;
+  font-family: inherit;
+  font-size: 0.52rem;
+  font-weight: 800;
+  background: #3e6b4b;
+  border: 1px solid #31563a;
+  border-radius: 8px;
+}
+
+.save-cloud-btn--ghost {
+  color: #486b4c;
+  background: #f7faf0;
+  border-color: #bdcdae;
+}
+
+.save-cloud-btn:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.save-cloud-status {
+  min-width: 0;
+  flex: 1;
+  color: #8a9481;
+  font-size: 0.48rem;
+  line-height: 1.4;
+}
+
+.save-cloud-status.is-ok { color: #527d3b; }
+.save-cloud-status.is-error { color: #a54b3f; }
+
 .profile-friends {
   margin-top: 16px;
 }
@@ -11331,6 +11548,11 @@ body.main-menu-open .scene {
       </button>
 
       <div id="saveManagerList" class="save-manager-list"></div>
+      <div class="save-cloud-bar">
+        <button id="cloudUploadBtn" type="button" class="save-cloud-btn">☁️ 云端备份</button>
+        <button id="cloudRestoreBtn" type="button" class="save-cloud-btn save-cloud-btn--ghost">☁️ 云端恢复</button>
+        <span id="cloudStatus" class="save-cloud-status" role="status"></span>
+      </div>
     </div>
   </div>
 
@@ -11724,8 +11946,15 @@ body.main-menu-open .scene {
         <div class="profile-xp-track"><i id="profileXpFill"></i></div>
         <p id="profileUgc" class="profile-ugc">已发布 UGC：0 个</p>
       </div>
+      <div id="profileHonors" class="profile-honors" aria-label="农场主荣誉"></div>
       <div class="profile-friends">
-        <div class="profile-friends-head"><strong>好友列表</strong><span>段位奖牌展示</span></div>
+        <div class="profile-friends-head"><strong>好友</strong><span id="friendHint">登录后可添加好友</span></div>
+        <div class="friend-add-row">
+          <input id="friendUsernameInput" type="text" maxlength="24" autocomplete="off" placeholder="输入对方农场主昵称" aria-label="好友昵称">
+          <button id="friendAddBtn" type="button">添加</button>
+        </div>
+        <p id="friendStatus" class="friend-status" role="status"></p>
+        <div id="friendRequests" class="friend-requests"></div>
         <ul id="profileFriendList" class="profile-friend-list"></ul>
       </div>
     </div>
@@ -12960,6 +13189,19 @@ body.main-menu-open .scene {
       isSnow: false,
       isExtreme: false
     },
+    partly_cloudy: {
+      label: '晴间多云',
+      icon: '🌤️',
+      waterDelta: -5,
+      transpiration: 0.8,
+      stateDelta: 0,
+      isRain: false,
+      isStorm: false,
+      isHeat: false,
+      isDrought: false,
+      isSnow: false,
+      isExtreme: false
+    },
     cloudy: {
       label: '阴天',
       icon: '☁️',
@@ -13121,6 +13363,7 @@ body.main-menu-open .scene {
 
   const WEATHER_EFFECT_RANGES = {
     sunny: { water: [-10, -6], state: [0, 0] },
+    partly_cloudy: { water: [-7, -3], state: [0, 0] },
     cloudy: { water: [-5, -1], state: [0, 0] },
     storm: { state: [-3, -1] },
     heat: { water: [-17, -11], state: [-4, -2] },
@@ -13141,8 +13384,9 @@ body.main-menu-open .scene {
   // Seasonal weather pools. Weights are normalized, and temp is [min, max]°C.
   const SEASON_WEATHER = {
     spring: {
-      sunny: { weight: 35, temp: [12, 22] },
-      cloudy: { weight: 20, temp: [10, 18] },
+      sunny: { weight: 30, temp: [12, 22] },
+      partly_cloudy: { weight: 12, temp: [11, 21] },
+      cloudy: { weight: 18, temp: [10, 18] },
       rain: { weight: 18, temp: [10, 18] },
       storm: { weight: 5, temp: [12, 20] },
       heat: { weight: 3, temp: [22, 28] },
@@ -13151,8 +13395,9 @@ body.main-menu-open .scene {
       snow: { weight: 4, temp: [-2, 4] }
     },
     summer: {
-      sunny: { weight: 30, temp: [24, 35] },
-      cloudy: { weight: 18, temp: [22, 30] },
+      sunny: { weight: 25, temp: [24, 35] },
+      partly_cloudy: { weight: 12, temp: [23, 33] },
+      cloudy: { weight: 17, temp: [22, 30] },
       rain: { weight: 22, temp: [22, 28] },
       storm: { weight: 12, temp: [22, 28] },
       heat: { weight: 10, temp: [35, 40] },
@@ -13160,8 +13405,9 @@ body.main-menu-open .scene {
       hail: { weight: 3, temp: [22, 30] }
     },
     autumn: {
-      sunny: { weight: 35, temp: [12, 22] },
-      cloudy: { weight: 20, temp: [10, 18] },
+      sunny: { weight: 30, temp: [12, 22] },
+      partly_cloudy: { weight: 12, temp: [11, 21] },
+      cloudy: { weight: 18, temp: [10, 18] },
       rain: { weight: 18, temp: [10, 18] },
       storm: { weight: 5, temp: [12, 20] },
       heat: { weight: 2, temp: [22, 26] },
@@ -13170,8 +13416,9 @@ body.main-menu-open .scene {
       frost: { weight: 7, temp: [-2, 6] }
     },
     winter: {
-      sunny: { weight: 30, temp: [-5, 8] },
-      cloudy: { weight: 20, temp: [-3, 5] },
+      sunny: { weight: 26, temp: [-5, 8] },
+      partly_cloudy: { weight: 10, temp: [-4, 7] },
+      cloudy: { weight: 18, temp: [-3, 5] },
       rain: { weight: 5, temp: [2, 8] },
       snow: { weight: 20, temp: [-5, 2] },
       blizzard: { weight: 10, temp: [-8, 0] },
@@ -14970,6 +15217,18 @@ body.main-menu-open .scene {
     body.dataset.overlay = weather.overlayKey || '';
   }
 
+  function defaultPlayerProgress() {
+    return {
+      xp: 0,
+      level: 1,
+      harvestCount: 0,
+      chatMessages: 0,
+      ugcPublished: 0,
+      honors: { harvest: false, community: false, codex: false },
+      persisted: false
+    };
+  }
+
   function loadStoredPlayerProgress() {
     try {
       const raw = JSON.parse(localStorage.getItem(PLAYER_PROGRESS_KEY) || 'null');
@@ -14980,6 +15239,13 @@ body.main-menu-open .scene {
         xp: Math.max(0, Number(raw.xp) || 0),
         level: Math.max(1, Math.floor(Number(raw.level) || 1)),
         harvestCount: Math.max(0, Number(raw.harvestCount) || 0),
+        chatMessages: Math.max(0, Number(raw.chatMessages) || 0),
+        ugcPublished: Math.max(0, Number(raw.ugcPublished) || 0),
+        honors: {
+          harvest: Boolean(raw.honors?.harvest),
+          community: Boolean(raw.honors?.community),
+          codex: Boolean(raw.honors?.codex)
+        },
         persisted: true
       };
     } catch {
@@ -14988,9 +15254,7 @@ body.main-menu-open .scene {
   }
 
   function ensurePlayerProgress() {
-    if (!playerProgress) {
-      playerProgress = { xp: 0, level: 1, harvestCount: 0, persisted: false };
-    }
+    if (!playerProgress) playerProgress = defaultPlayerProgress();
     return playerProgress;
   }
 
@@ -15005,7 +15269,14 @@ body.main-menu-open .scene {
         JSON.stringify({
           xp: progress.xp,
           level: progress.level,
-          harvestCount: Math.max(0, Number(progress.harvestCount) || 0)
+          harvestCount: Math.max(0, Number(progress.harvestCount) || 0),
+          chatMessages: Math.max(0, Number(progress.chatMessages) || 0),
+          ugcPublished: Math.max(0, Number(progress.ugcPublished) || 0),
+          honors: {
+            harvest: Boolean(progress.honors?.harvest),
+            community: Boolean(progress.honors?.community),
+            codex: Boolean(progress.honors?.codex)
+          }
         })
       );
     } catch {
@@ -15026,6 +15297,7 @@ body.main-menu-open .scene {
     const xp = Math.max(0, Number(state.xp) || 0);
     if (level <= 1 && xp <= 0) return;
     playerProgress = {
+      ...defaultPlayerProgress(),
       xp,
       level,
       harvestCount: Math.max(0, Number(state.harvestCount) || 0),
@@ -15037,7 +15309,10 @@ body.main-menu-open .scene {
         JSON.stringify({
           xp: playerProgress.xp,
           level: playerProgress.level,
-          harvestCount: playerProgress.harvestCount
+          harvestCount: playerProgress.harvestCount,
+          chatMessages: playerProgress.chatMessages,
+          ugcPublished: playerProgress.ugcPublished,
+          honors: playerProgress.honors
         })
       );
     } catch {
@@ -15045,10 +15320,42 @@ body.main-menu-open .scene {
     }
   }
 
+  function checkHonors({ silent = false } = {}) {
+    const progress = ensurePlayerProgress();
+    const checks = [
+      ['harvest', Number(progress.harvestCount) >= 50, '丰收勋章', '累计收获 50 次'],
+      ['community', Number(progress.chatMessages) >= 10, '社区贡献', '在聊天室发送 10 条消息'],
+      ['codex', Number(progress.ugcPublished) >= 5, '图鉴作者', '发布 5 个自定义图鉴']
+    ];
+    let changed = false;
+    for (const [key, unlocked, title, requirement] of checks) {
+      if (!unlocked || progress.honors?.[key]) continue;
+      progress.honors = { ...(progress.honors || {}), [key]: true };
+      changed = true;
+      if (!silent) {
+        showToast('🏅', `解锁荣誉「${title}」：${requirement}`);
+        showAlert({
+          icon: '🏅',
+          title: `获得「${title}」`,
+          text: `你已达成：${requirement}。这枚荣誉会保存在农场主档案中，不会随存档删除。`,
+          button: '收下',
+          tone: 'success'
+        });
+      }
+    }
+    if (changed) {
+      writeStoredPlayerProgress();
+      renderProfileHonors();
+      renderProfileUI();
+    }
+    return changed;
+  }
+
   function recordHarvest(count = 1) {
     const progress = ensurePlayerProgress();
     progress.harvestCount = Math.max(0, Number(progress.harvestCount) || 0) + Math.max(0, Number(count) || 0);
     writeStoredPlayerProgress();
+    checkHonors();
     renderPlayerProgress();
     renderProfileUI();
   }
@@ -15092,7 +15399,11 @@ body.main-menu-open .scene {
       achievementAwarded: false
     };
     game.ugc.publishedCount = (Number(game.ugc.publishedCount) || 0) + 1;
+    const progress = ensurePlayerProgress();
+    progress.ugcPublished = Math.max(0, Number(progress.ugcPublished) || 0) + 1;
+    writeStoredPlayerProgress();
     addXp(500, { reason: 'UGC 发布' });
+    checkHonors();
     if (game.ugc.publishedCount >= 5 && !game.ugc.achievementAwarded) {
       game.ugc.achievementAwarded = true;
       addXp(2000, { reason: 'UGC 成就' });
@@ -15150,11 +15461,80 @@ body.main-menu-open .scene {
     }
   }
 
+  function renderProfileHonors() {
+    const box = $('#profileHonors');
+    if (!box) return;
+    const progress = ensurePlayerProgress();
+    const honors = [
+      ['harvest', '🌽', '丰收勋章', `${Math.min(50, Number(progress.harvestCount) || 0)}/50 收获`],
+      ['community', '💬', '社区贡献', `${Math.min(10, Number(progress.chatMessages) || 0)}/10 聊天`],
+      ['codex', '📖', '图鉴作者', `${Math.min(5, Number(progress.ugcPublished) || 0)}/5 发布`]
+    ];
+    box.innerHTML = honors
+      .map(([key, icon, title, requirement]) => {
+        const unlocked = Boolean(progress.honors?.[key]);
+        return `<span class="profile-honor${unlocked ? ' is-unlocked' : ''}" title="${unlocked ? '已解锁' : requirement}">
+          <span class="profile-honor-icon" aria-hidden="true">${icon}</span>
+          <span><strong>${title}</strong><small>${unlocked ? '已解锁' : requirement}</small></span>
+        </span>`;
+      })
+      .join('');
+  }
+
+  function renderFriendRequests() {
+    const box = $('#friendRequests');
+    if (!box) return;
+    const incoming = friendRequestsCache
+      .map((request) => {
+        const id = request.$id || request.id;
+        return `<div class="friend-request">
+          <span>🌱 ${customEscape(request.from_name || '农场主')} 请求加你</span>
+          <button type="button" data-friend-accept="${customEscape(id)}">接受</button>
+          <button type="button" data-friend-reject="${customEscape(id)}">拒绝</button>
+        </div>`;
+      })
+      .join('');
+    const sent = friendSentCache
+      .map((request) => `<div class="friend-request friend-request--sent">
+        <span>📨 已向 ${customEscape(request.to_name || '农场主')} 发送申请</span>
+        <small>等待对方接受</small>
+      </div>`)
+      .join('');
+    box.innerHTML = incoming + sent;
+  }
+
   function renderProfileFriends() {
     const list = $('#profileFriendList');
+    const input = $('#friendUsernameInput');
+    const addButton = $('#friendAddBtn');
+    const hint = $('#friendHint');
     if (!list) return;
-    const friends = Array.isArray(game.friends) ? game.friends : [];
-    list.innerHTML = friends
+    if (!isLoggedIn) {
+      friendCache = [];
+      friendRequestsCache = [];
+      friendSentCache = [];
+      if (input) {
+        input.disabled = true;
+        input.placeholder = '登录后可添加好友';
+      }
+      if (addButton) addButton.disabled = true;
+      if (hint) hint.textContent = '登录后可添加好友';
+      renderFriendRequests();
+      list.innerHTML = '<li class="profile-friends-empty">登录后可按昵称添加好友、接收申请。</li>';
+      return;
+    }
+    if (input) {
+      input.disabled = false;
+      input.placeholder = '输入对方农场主昵称';
+    }
+    if (addButton) addButton.disabled = false;
+    if (hint) hint.textContent = `已登录 · ${friendCache.length} 位好友`;
+    renderFriendRequests();
+    if (!friendCache.length) {
+      list.innerHTML = '<li class="profile-friends-empty">还没有好友。输入对方昵称发送申请，对方接受后会出现在这里。</li>';
+      return;
+    }
+    list.innerHTML = friendCache
       .map((friend) => {
         const rank = rankForLevel(friend.level);
         return `<li class="profile-friend">
@@ -15162,15 +15542,253 @@ body.main-menu-open .scene {
           <span class="profile-friend-name">${customEscape(friend.name)}</span>
           <span class="profile-friend-level">Lv.${friend.level}</span>
           <span class="profile-friend-rank">${rank.title}</span>
+          <button type="button" class="profile-friend-remove" data-friend-remove="${customEscape(friend.docId)}">移除</button>
         </li>`;
       })
       .join('');
+  }
+
+  function setFriendStatus(message, tone = '') {
+    const el = $('#friendStatus');
+    if (!el) return;
+    el.textContent = message;
+    el.classList.toggle('is-ok', tone === 'ok');
+    el.classList.toggle('is-error', tone === 'error');
+  }
+
+  async function fetchFriendStats(userId, name) {
+    try {
+      const databases = ensureAppwrite();
+      if (userId) {
+        try {
+          const doc = await databases.getDocument(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_DIRECTORY_TABLE_ID,
+            playerDirectoryDocumentIdFor(userId)
+          );
+          return { level: Math.max(1, Number(doc.level) || 1), xp: Number(doc.xp) || 0 };
+        } catch {}
+      }
+      if (name) {
+        const Q = window.Appwrite?.Query;
+        const result = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_DIRECTORY_TABLE_ID,
+          [Q.equal('username', name), Q.limit(1)]
+        );
+        const doc = (result?.documents || result?.rows || [])[0];
+        if (doc) return { level: Math.max(1, Number(doc.level) || 1), xp: Number(doc.xp) || 0 };
+      }
+    } catch (error) {
+      console.warn('Friend stats lookup skipped:', error?.message || error);
+    }
+    return { level: 1, xp: 0 };
+  }
+
+  async function loadFriendData() {
+    if (!isLoggedIn || !currentAuthUser?.id) {
+      friendCache = [];
+      friendRequestsCache = [];
+      friendSentCache = [];
+      renderProfileFriends();
+      return;
+    }
+    const me = currentAuthUser;
+    setFriendStatus('正在同步好友…');
+    try {
+      const databases = ensureAppwrite();
+      const Q = window.Appwrite?.Query;
+      const [fromMe, toMe] = await Promise.all([
+        databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_FRIEND_TABLE_ID, [
+          Q.equal('from_id', me.id),
+          Q.limit(100)
+        ]),
+        databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_FRIEND_TABLE_ID, [
+          Q.equal('to_id', me.id),
+          Q.limit(100)
+        ])
+      ]);
+      const all = [...(fromMe?.documents || []), ...(toMe?.documents || [])];
+      const seen = new Set();
+      const accepted = [];
+      const incoming = [];
+      const outgoing = [];
+      for (const doc of all) {
+        const id = doc.$id || doc.id;
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        if (doc.status === 'accepted') accepted.push(doc);
+        if (doc.status === 'pending' && doc.to_id === me.id) incoming.push(doc);
+        if (doc.status === 'pending' && doc.from_id === me.id) outgoing.push(doc);
+      }
+      friendRequestsCache = incoming;
+      friendSentCache = outgoing;
+      friendCache = await Promise.all(
+        accepted.map(async (doc) => {
+          const otherId = doc.from_id === me.id ? doc.to_id : doc.from_id;
+          const otherName = doc.from_id === me.id ? doc.to_name : doc.from_name;
+          const stats = await fetchFriendStats(otherId, otherName);
+          return {
+            docId: doc.$id || doc.id,
+            id: otherId,
+            name: otherName || '农场主',
+            level: stats.level
+          };
+        })
+      );
+      friendCache.sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, 'zh'));
+      setFriendStatus('');
+      renderProfileFriends();
+    } catch (error) {
+      console.error('Friend data failed:', error);
+      friendCache = [];
+      friendRequestsCache = [];
+      friendSentCache = [];
+      setFriendStatus('好友数据读取失败：请确认 friend_links 集合已配置', 'error');
+      renderProfileFriends();
+    }
+  }
+
+  async function findPlayerStatsByUsername(name) {
+    const databases = ensureAppwrite();
+    const Q = window.Appwrite?.Query;
+    const result = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_DIRECTORY_TABLE_ID,
+      [Q.equal('username', name), Q.limit(1)]
+    );
+    const doc = (result?.documents || result?.rows || [])[0];
+    if (!doc) return null;
+    if (!doc.user_id) {
+      throw new Error('对方尚未同步新的农场主目录，请对方重新登录一次');
+    }
+    return { id: doc.user_id, name: doc.username || name };
+  }
+
+  async function sendFriendRequest() {
+    if (!isLoggedIn || !currentAuthUser?.id) {
+      showToast('🔐', '请先登录后再添加好友');
+      return;
+    }
+    const input = $('#friendUsernameInput');
+    const button = $('#friendAddBtn');
+    const name = input?.value.trim() || '';
+    if (name.length < 2) {
+      setFriendStatus('请输入至少 2 个字符的农场主昵称', 'error');
+      return;
+    }
+    if (name === currentAuthUser.name) {
+      setFriendStatus('不能添加自己为好友', 'error');
+      return;
+    }
+    if (button) button.disabled = true;
+    setFriendStatus('正在查找农场主…');
+    try {
+      const target = await findPlayerStatsByUsername(name);
+      if (!target) {
+        setFriendStatus('没有找到这个昵称；对方需要先登录并同步排行榜', 'error');
+        return;
+      }
+      if (target.id === currentAuthUser.id) {
+        setFriendStatus('不能添加自己为好友', 'error');
+        return;
+      }
+      const databases = ensureAppwrite();
+      const Q = window.Appwrite?.Query;
+      const [sent, received] = await Promise.all([
+        databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_FRIEND_TABLE_ID, [
+          Q.equal('from_id', currentAuthUser.id),
+          Q.equal('to_id', target.id),
+          Q.limit(10)
+        ]),
+        databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_FRIEND_TABLE_ID, [
+          Q.equal('from_id', target.id),
+          Q.equal('to_id', currentAuthUser.id),
+          Q.limit(10)
+        ])
+      ]);
+      const existing = [...(sent?.documents || []), ...(received?.documents || [])];
+      if (existing.some((doc) => doc.status === 'accepted')) {
+        setFriendStatus('你们已经是好友了', 'ok');
+        return;
+      }
+      if (existing.some((doc) => doc.status === 'pending')) {
+        setFriendStatus('已有待处理的好友申请', 'ok');
+        return;
+      }
+      const permissions = appwriteDocumentPermissions([currentAuthUser.id, target.id]);
+      await databases.createDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_FRIEND_TABLE_ID,
+        communityDocumentId(),
+        {
+          from_id: currentAuthUser.id,
+          from_name: currentAuthUser.name,
+          to_id: target.id,
+          to_name: target.name,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        },
+        permissions
+      );
+      if (input) input.value = '';
+      await loadFriendData();
+      setFriendStatus(`已向「${target.name}」发送好友申请`, 'ok');
+    } catch (error) {
+      console.error('Friend request failed:', error);
+      setFriendStatus('好友申请发送失败：请确认 friend_links 集合与权限已配置', 'error');
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function respondFriendRequest(docId, accept) {
+    if (!isLoggedIn || !currentAuthUser?.id) return;
+    try {
+      const databases = ensureAppwrite();
+      const doc = await databases.getDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_FRIEND_TABLE_ID,
+        docId
+      );
+      if (doc.to_id !== currentAuthUser.id) {
+        setFriendStatus('这条好友申请不是发给你的', 'error');
+        return;
+      }
+      await databases.updateDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_FRIEND_TABLE_ID,
+        docId,
+        { status: accept ? 'accepted' : 'rejected' }
+      );
+      setFriendStatus(accept ? '已接受好友申请' : '已拒绝好友申请', 'ok');
+      await loadFriendData();
+      setFriendStatus(accept ? '已接受好友申请' : '已拒绝好友申请', 'ok');
+    } catch (error) {
+      console.error('Friend request response failed:', error);
+      setFriendStatus('好友申请处理失败，请稍后再试', 'error');
+    }
+  }
+
+  async function removeFriend(docId) {
+    if (!isLoggedIn) return;
+    try {
+      const databases = ensureAppwrite();
+      await databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_FRIEND_TABLE_ID, docId);
+      setFriendStatus('已移除好友', 'ok');
+      await loadFriendData();
+      setFriendStatus('已移除好友', 'ok');
+    } catch (error) {
+      console.error('Friend remove failed:', error);
+      setFriendStatus('移除好友失败，请稍后再试', 'error');
+    }
   }
 
   function renderProfileUI() {
     const name = $('#profileName');
     if (name) name.textContent = game.playerName || '青禾农场主';
     renderPlayerProgress();
+    renderProfileHonors();
     renderProfileFriends();
   }
 
@@ -15484,6 +16102,7 @@ body.main-menu-open .scene {
     game.running = false;
     game.lastTick = performance.now();
     updateTimeDisplay();
+    setCloudStatus('');
     renderSaveManager();
     if (initial) {
       const saves = readSaves();
@@ -19907,6 +20526,9 @@ body.main-menu-open .scene {
   const APPWRITE_TABLE_ID = 'ugc_items';
   const APPWRITE_CHAT_TABLE_ID = 'chat_messages';
   const APPWRITE_STATS_TABLE_ID = 'player_stats';
+  const APPWRITE_DIRECTORY_TABLE_ID = 'player_directory';
+  const APPWRITE_CLOUD_TABLE_ID = 'player_cloud_saves';
+  const APPWRITE_FRIEND_TABLE_ID = 'friend_links';
   const AUTH_USER_KEY = 'qinghe_auth_user';
   const PLAYER_PROGRESS_KEY = 'qinghe_player_progress';
   let appwriteClient = null;
@@ -19915,6 +20537,9 @@ body.main-menu-open .scene {
   let currentAuthUser = null;
   let isLoggedIn = false;
   let playerProgress = null;
+  let friendCache = [];
+  let friendRequestsCache = [];
+  let friendSentCache = [];
   let customEntities = [];
 
   const CUSTOM_SCHEMAS = {
@@ -20375,6 +21000,9 @@ body.main-menu-open .scene {
       ? { id: user.$id || user.id || '', name: user.name, email: user.email || '' }
       : null;
     isLoggedIn = Boolean(currentAuthUser);
+    friendCache = [];
+    friendRequestsCache = [];
+    friendSentCache = [];
     if (currentAuthUser) {
       game.playerName = currentAuthUser.name;
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(currentAuthUser));
@@ -20383,6 +21011,10 @@ body.main-menu-open .scene {
     }
     updateAuthUI();
     if (isLoggedIn) schedulePlayerStatsSync();
+    if ($('#profileModal') && !$('#profileModal').hidden) {
+      renderProfileFriends();
+      if (isLoggedIn) loadFriendData();
+    }
   }
 
   function updateAuthUI() {
@@ -20631,13 +21263,216 @@ body.main-menu-open .scene {
     return hash.toString(36);
   }
 
+  function playerStatsDocumentIdFor(seed) {
+    return `p_${stablePlayerHash(seed || 'guest')}`;
+  }
+
+  function playerDirectoryDocumentIdFor(userId) {
+    return `d_${stablePlayerHash(userId || 'guest')}`;
+  }
+
   function playerStatsDocumentId() {
     const seed =
       currentAuthUser?.id ||
       currentAuthUser?.name ||
       game.playerName ||
       'guest';
-    return `p_${stablePlayerHash(seed)}`;
+    return playerStatsDocumentIdFor(seed);
+  }
+
+  function appwriteDocumentPermissions(userIds = []) {
+    const Permission = window.Appwrite?.Permission;
+    const Role = window.Appwrite?.Role;
+    if (!Permission?.read || !Permission?.update || !Permission?.delete || !Role?.user) {
+      return [];
+    }
+    const permissions = [];
+    for (const userId of [...new Set(userIds.filter(Boolean))]) {
+      permissions.push(
+        Permission.read(Role.user(userId)),
+        Permission.update(Role.user(userId)),
+        Permission.delete(Role.user(userId))
+      );
+    }
+    return permissions;
+  }
+
+  function cloudSaveDocumentId() {
+    const seed = currentAuthUser?.id || currentAuthUser?.name || 'guest';
+    return `cloud_${stablePlayerHash(seed)}`;
+  }
+
+  function setCloudStatus(message = '', tone = '') {
+    const el = $('#cloudStatus');
+    if (!el) return;
+    el.textContent = message;
+    el.classList.toggle('is-ok', tone === 'ok');
+    el.classList.toggle('is-error', tone === 'error');
+  }
+
+  function cloudBundle() {
+    return {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      currentSaveId,
+      saves: readSaves(),
+      progress: {
+        xp: Math.max(0, Number(game.xp) || 0),
+        level: Math.max(1, Number(game.level) || 1),
+        harvestCount: Math.max(0, Number(playerProgress?.harvestCount) || 0),
+        chatMessages: Math.max(0, Number(playerProgress?.chatMessages) || 0),
+        ugcPublished: Math.max(0, Number(playerProgress?.ugcPublished) || 0),
+        honors: {
+          harvest: Boolean(playerProgress?.honors?.harvest),
+          community: Boolean(playerProgress?.honors?.community),
+          codex: Boolean(playerProgress?.honors?.codex)
+        }
+      }
+    };
+  }
+
+  async function uploadCloudSave() {
+    if (!requireOnlineFeature()) return;
+    if (!currentAuthUser?.id) {
+      showToast('☁️', '请先登录后再使用云备份');
+      return;
+    }
+    const saves = readSaves();
+    if (!saves.length) {
+      showToast('☁️', '没有可备份的存档');
+      return;
+    }
+    const uploadBtn = $('#cloudUploadBtn');
+    const restoreBtn = $('#cloudRestoreBtn');
+    if (uploadBtn) uploadBtn.disabled = true;
+    if (restoreBtn) restoreBtn.disabled = true;
+    setCloudStatus('正在上传存档…');
+    try {
+      if (currentSaveId != null) await persistCurrentSave({ silent: true });
+      const databases = ensureAppwrite();
+      const bundle = cloudBundle();
+      const payload = {
+        user_id: currentAuthUser.id,
+        username: currentAuthUser.name || game.playerName || '农场主',
+        save_json: JSON.stringify(bundle),
+        updated_at: bundle.exportedAt
+      };
+      const documentId = cloudSaveDocumentId();
+      const permissions = appwriteDocumentPermissions([currentAuthUser.id]);
+      try {
+        await databases.updateDocument(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_CLOUD_TABLE_ID,
+          documentId,
+          payload
+        );
+      } catch (updateError) {
+        await databases.createDocument(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_CLOUD_TABLE_ID,
+          documentId,
+          payload,
+          permissions
+        );
+      }
+      setCloudStatus(`已备份 ${bundle.saves.length} 个存档与农场主进度`, 'ok');
+      showToast('☁️', '云备份完成');
+    } catch (error) {
+      console.error('Cloud upload failed:', error);
+      setCloudStatus('云备份失败：请确认 player_cloud_saves 集合与权限已配置', 'error');
+      showAlert({
+        icon: '☁️',
+        title: '云备份失败',
+        text: '请先在 Appwrite 创建 player_cloud_saves 集合并授予当前用户 create/read/update 权限，然后重试。',
+        button: '知道了',
+        tone: 'warning'
+      });
+    } finally {
+      if (uploadBtn) uploadBtn.disabled = false;
+      if (restoreBtn) restoreBtn.disabled = false;
+    }
+  }
+
+  async function restoreCloudSave() {
+    if (!requireOnlineFeature()) return;
+    if (!currentAuthUser?.id) {
+      showToast('☁️', '请先登录后再使用云恢复');
+      return;
+    }
+    const uploadBtn = $('#cloudUploadBtn');
+    const restoreBtn = $('#cloudRestoreBtn');
+    if (uploadBtn) uploadBtn.disabled = true;
+    if (restoreBtn) restoreBtn.disabled = true;
+    setCloudStatus('正在读取云端存档…');
+    try {
+      const databases = ensureAppwrite();
+      const document = await databases.getDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_CLOUD_TABLE_ID,
+        cloudSaveDocumentId()
+      );
+      const bundle = JSON.parse(document.save_json || '{}');
+      if (!Array.isArray(bundle.saves) || bundle.saves.length === 0) {
+        throw new Error('云端没有有效存档');
+      }
+      setCloudStatus(`云端备份：${document.updated_at || document.$updatedAt || '未知时间'}`, 'ok');
+      openConfirm({
+        icon: '☁️',
+        title: '从云端恢复',
+        text: `将用云端 ${bundle.saves.length} 个存档和农场主进度覆盖本地数据。此操作不可撤销，确定继续吗？`,
+        confirmLabel: '覆盖并恢复',
+        cancelLabel: '取消',
+        onConfirm: async () => {
+          try {
+            const progress = bundle.progress || {};
+            playerProgress = {
+              ...defaultPlayerProgress(),
+              ...progress,
+              honors: {
+                harvest: Boolean(progress.honors?.harvest),
+                community: Boolean(progress.honors?.community),
+                codex: Boolean(progress.honors?.codex)
+              },
+              persisted: true
+            };
+            applyPlayerProgressToGame();
+            writeStoredPlayerProgress();
+            writeSaves(bundle.saves);
+            const targetId = bundle.saves.some((save) => String(save.id) === String(bundle.currentSaveId))
+              ? bundle.currentSaveId
+              : bundle.saves[0].id;
+            currentSaveId = targetId;
+            loadSaveById(targetId);
+            closeLayer(saveManagerModal, true);
+            setCloudStatus('已从云端恢复；建议立即检查存档内容', 'ok');
+            showToast('☁️', '云端存档已恢复');
+          } catch (error) {
+            console.error('Cloud restore apply failed:', error);
+            setCloudStatus('恢复失败：云端数据损坏或存储空间不足', 'error');
+            showAlert({
+              icon: '☁️',
+              title: '恢复失败',
+              text: '云端数据无法写入本地，请检查浏览器存储空间或稍后重试。',
+              button: '知道了',
+              tone: 'danger'
+            });
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Cloud restore failed:', error);
+      setCloudStatus('云恢复失败：请确认云端备份与集合权限', 'error');
+      showAlert({
+        icon: '☁️',
+        title: '云恢复失败',
+        text: '没有读取到云端备份，或 player_cloud_saves 集合尚未配置。',
+        button: '知道了',
+        tone: 'warning'
+      });
+    } finally {
+      if (uploadBtn) uploadBtn.disabled = false;
+      if (restoreBtn) restoreBtn.disabled = false;
+    }
   }
 
   let statsSyncTimer = 0;
@@ -20657,11 +21492,9 @@ body.main-menu-open .scene {
     const databases = ensureAppwrite();
     const username = currentAuthUser?.name || game.playerName || '青禾农场主';
     const documentId = playerStatsDocumentId();
-    const payload = {
-      username,
-      xp: Math.max(0, Number(game.xp) || 0),
-      level: Math.max(1, Number(game.level) || 1)
-    };
+    const xp = Math.max(0, Number(game.xp) || 0);
+    const level = Math.max(1, Number(game.level) || 1);
+    const payload = { username, xp, level };
     try {
       await databases.updateDocument(
         APPWRITE_DATABASE_ID,
@@ -20680,6 +21513,47 @@ body.main-menu-open .scene {
       } catch (createError) {
         console.warn('Appwrite player_stats unavailable:', createError?.message || createError);
       }
+    }
+    await syncPlayerDirectory(username, xp, level);
+  }
+
+  async function syncPlayerDirectory(username, xp, level) {
+    if (!isLoggedIn || !currentAuthUser?.id || !window.Appwrite) return;
+    try {
+      const databases = ensureAppwrite();
+      const Permission = window.Appwrite.Permission;
+      const Role = window.Appwrite.Role;
+      const documentId = playerDirectoryDocumentIdFor(currentAuthUser.id);
+      const payload = {
+        user_id: currentAuthUser.id,
+        username,
+        xp,
+        level,
+        updated_at: new Date().toISOString()
+      };
+      const permissions = [
+        Permission.read(Role.any()),
+        Permission.update(Role.user(currentAuthUser.id)),
+        Permission.delete(Role.user(currentAuthUser.id))
+      ];
+      try {
+        await databases.updateDocument(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_DIRECTORY_TABLE_ID,
+          documentId,
+          payload
+        );
+      } catch (updateError) {
+        await databases.createDocument(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_DIRECTORY_TABLE_ID,
+          documentId,
+          payload,
+          permissions
+        );
+      }
+    } catch (error) {
+      console.warn('Appwrite player_directory unavailable:', error?.message || error);
     }
   }
 
@@ -20792,6 +21666,10 @@ body.main-menu-open .scene {
         }
       );
       if (input) input.value = '';
+      const progress = ensurePlayerProgress();
+      progress.chatMessages = Math.max(0, Number(progress.chatMessages) || 0) + 1;
+      writeStoredPlayerProgress();
+      checkHonors();
       await loadChatMessages();
     } catch (error) {
       console.error('Chat send failed:', error);
@@ -22609,7 +23487,7 @@ body.main-menu-open .scene {
     },
     {
       title: '天气与季节',
-      text: '天气按日生成、06:00 切换，可能出现太阳雪、太阳雨、晚霜冻、倒春寒、暴雪、冻雨和冰雹。降雨分小雨/中雨/大雨/暴雨，雪分小雪/中雪/大雪；复合天气会叠加影响。天气影响蒸腾、水分、状态、品质和病虫害概率，冬季还要注意冻害。',
+      text: '天气按日生成、06:00 切换，可能出现晴天、晴间多云、阴天、太阳雪、太阳雨、晚霜冻、倒春寒、暴雪、冻雨和冰雹。晴间多云是晴与阴之间的温和天气：水分损耗比晴天慢、比阴天快，适合安排施肥和喷药。降雨分小雨/中雨/大雨/暴雨，雪分小雪/中雪/大雪；复合天气会叠加影响。天气影响蒸腾、水分、状态、品质和病虫害概率，冬季还要注意冻害。',
       target: '#weatherChip'
     },
     {
@@ -22629,12 +23507,12 @@ body.main-menu-open .scene {
     },
     {
       title: '等级与个人主页',
-      text: '顶部金币旁是等级与经验条。收获作物、发布 UGC 和社区下载会获得经验；Lv.1–12 使用分段经验表，Lv.13+ 每级递增。点击经验徽章打开个人主页，可查看当前称号、段位奖牌、经验、已发布 UGC 和好友列表。',
+      text: '顶部金币旁是等级与经验条。收获作物、发布 UGC 和社区下载会获得经验；Lv.1–12 使用分段经验表，Lv.13+ 每级递增。点击经验徽章打开个人主页，可查看当前称号、段位奖牌、经验、已发布 UGC、三项荣誉和好友列表。累计收获 50 次解锁丰收勋章，聊天 10 条解锁社区贡献，发布 5 个自定义图鉴解锁图鉴作者。',
       target: '#playerProfileBtn'
     },
     {
       title: '联网、社区与聊天',
-      text: '游客可以完整单机游玩。只有发布社区图鉴、刷新社区广场、聊天和排行榜需要登录；未登录点击这些入口会弹出联网提示，可直接选择「暂不，继续单机」。登录后右上角显示当前农场主；发布 UGC 会写入作者名，社区卡片显示“作者：昵称”。聊天室每 5 秒刷新一次；排行榜按经验值显示前 50 名。',
+      text: '游客可以完整单机游玩。发布社区图鉴、刷新社区广场、聊天、排行榜、好友和云备份需要登录；未登录时可直接选择「暂不，继续单机」。登录后右上角显示当前农场主。个人主页可按昵称搜索好友、发送/接受申请；存档管理内可「云端备份」全部存档与经验，或「云端恢复」。聊天室每 5 秒刷新一次；排行榜按经验值显示前 50 名。',
       target: '#topAuthBtn'
     },
     {
@@ -23676,6 +24554,8 @@ body.main-menu-open .scene {
   saveManagerBtn.addEventListener('click', () => openSaveManager());
   saveManagerClose.addEventListener('click', closeSaveManager);
   newSaveBtn.addEventListener('click', createNewSave);
+  $('#cloudUploadBtn')?.addEventListener('click', uploadCloudSave);
+  $('#cloudRestoreBtn')?.addEventListener('click', restoreCloudSave);
   saveManagerList.addEventListener('click', (event) => {
     const readButton = event.target.closest('[data-save-read]');
     if (readButton) {
@@ -23829,6 +24709,24 @@ body.main-menu-open .scene {
   $('#playerProfileBtn')?.addEventListener('click', () => {
     renderProfileUI();
     openLayer($('#profileModal'), { trigger: $('#playerProfileBtn') });
+    if (isLoggedIn) loadFriendData();
+  });
+  $('#friendAddBtn')?.addEventListener('click', sendFriendRequest);
+  $('#friendUsernameInput')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      sendFriendRequest();
+    }
+  });
+  $('#profileFriendList')?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-friend-remove]');
+    if (button) removeFriend(button.dataset.friendRemove);
+  });
+  $('#friendRequests')?.addEventListener('click', (event) => {
+    const accept = event.target.closest('[data-friend-accept]');
+    const reject = event.target.closest('[data-friend-reject]');
+    if (accept) respondFriendRequest(accept.dataset.friendAccept, true);
+    if (reject) respondFriendRequest(reject.dataset.friendReject, false);
   });
   $('#publishCommunityBtn')?.addEventListener('click', publishCommunityEntity);
   $('#menuAuthBtn')?.addEventListener('click', openAuthModal);
@@ -24166,6 +25064,7 @@ body.main-menu-open .scene {
   updateAuthUI();
   playerProgress = loadStoredPlayerProgress();
   if (playerProgress?.persisted) applyPlayerProgressToGame();
+  checkHonors({ silent: true });
   game.aiConfig = {
     customApiKey: getCustomAiConfig().customApiKey,
     customBaseUrl: getCustomAiConfig().customBaseUrl,
