@@ -13887,7 +13887,14 @@ body.main-menu-open .scene {
       return { key: 'weak', icon: '🥀', label: '危重', tone: 'bad', stage, detail: '状态 30–49，作物停止生长；每天 06:00 进行 50% 存活判定。' };
     }
     if (plot.status < 75) {
-      return { key: 'reduced', icon: '📉', label: '减产', tone: 'warn', stage, detail: '状态 50–75，可以收获，但产量打折。' };
+      return {
+        key: 'reduced',
+        icon: '🌿',
+        label: '减产',
+        tone: 'warn',
+        stage,
+        detail: '状态 50–75，可以收获，但产量打折。'
+      };
     }
     if (plot.status < 80) {
       return { key: 'normal', icon: '🌿', label: '正常', tone: 'good', stage, detail: '状态 75–80，正常收获区间。' };
@@ -13900,6 +13907,23 @@ body.main-menu-open .scene {
       stage,
       detail: '状态达到 80 以上，进入大丰收区间。'
     };
+  }
+
+  function cropVisualIcon(plot, config, display, qualityVisual) {
+    // Reduced and bumper harvest are yield states, not visual states.
+    // Keep the original crop icon for those two; all other conditions can
+    // still use their status / quality visual as before.
+    if (display?.key === 'reduced' || display?.key === 'bumper') {
+      return config?.emoji || CROPS[plot?.crop]?.emoji || '🌱';
+    }
+    return qualityVisual?.icon || display?.icon || config?.emoji || '🌱';
+  }
+
+  function cropPanelIcon(plot, config, display) {
+    if (display?.key === 'reduced' || display?.key === 'bumper') {
+      return config?.emoji || CROPS[plot?.crop]?.emoji || '🌱';
+    }
+    return display?.icon || config?.emoji || '🌱';
   }
 
   function getStress(plot) {
@@ -14135,7 +14159,7 @@ body.main-menu-open .scene {
         const label = statusLabel(plot);
         const dotTone = plot.dead || plot.status < 50 ? 'is-bad' : plot.status >= 80 ? '' : 'is-warn';
         const golden = plot.breakthrough ? ' is-gold' : '';
-        parts.push(`<span class="plot-crop${plot.dead ? ' is-dead' : golden}${qualityVisual ? ` ${qualityVisual.className}` : ''}" aria-hidden="true">${qualityVisual?.icon || display?.icon || config.emoji}</span>`);
+        parts.push(`<span class="plot-crop${plot.dead ? ' is-dead' : golden}${qualityVisual ? ` ${qualityVisual.className}` : ''}" aria-hidden="true">${cropVisualIcon(plot, config, display, qualityVisual)}</span>`);
         parts.push(`<span class="plot-status-dot ${dotTone}" aria-hidden="true"></span>`);
         if (plot.isFrozen) parts.push('<span class="plot-frost" aria-hidden="true">❄️</span>');
 
@@ -14374,11 +14398,11 @@ body.main-menu-open .scene {
 
     container.innerHTML = `
       <div class="crop-section-head">
-        <h4 class="section-title">${display?.icon || config.emoji} ${config.name} · ${display?.label || label.text}</h4>
+        <h4 class="section-title">${cropPanelIcon(plot, config, display)} ${config.name} · ${display?.label || label.text}</h4>
         <span class="section-note">生长第 ${fmt1(Math.max(1, Number(plot.age) || 0))} 天 · ${stage.name}</span>
       </div>
       <div class="crop-card">
-        <div class="crop-card-icon${plot.breakthrough ? ' is-gold' : ''}${plot.dead ? ' is-dead' : ''}" aria-hidden="true">${qualityVisual?.icon || display?.icon || config.emoji}</div>
+        <div class="crop-card-icon${plot.breakthrough ? ' is-gold' : ''}${plot.dead ? ' is-dead' : ''}" aria-hidden="true">${cropVisualIcon(plot, config, display, qualityVisual)}</div>
         <div class="crop-card-main">
           <div class="crop-card-top">
             <span class="crop-card-name">${config.name} · ${config.note}</span>
@@ -14864,6 +14888,7 @@ body.main-menu-open .scene {
     refreshAll();
     showToast('🧺', `一键收获 ${harvested} 块 · 共 ${fmt1(totalKg)} kg 已入库`);
     if (totalXp > 0) addXp(totalXp, { reason: '批量收获' });
+    if (harvested > 0) recordHarvest(harvested);
   }
 
   function handleMultiAction(action) {
@@ -14945,6 +14970,89 @@ body.main-menu-open .scene {
     body.dataset.overlay = weather.overlayKey || '';
   }
 
+  function loadStoredPlayerProgress() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(PLAYER_PROGRESS_KEY) || 'null');
+      if (!raw || !Number.isFinite(Number(raw.level)) || !Number.isFinite(Number(raw.xp))) {
+        return null;
+      }
+      return {
+        xp: Math.max(0, Number(raw.xp) || 0),
+        level: Math.max(1, Math.floor(Number(raw.level) || 1)),
+        harvestCount: Math.max(0, Number(raw.harvestCount) || 0),
+        persisted: true
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function ensurePlayerProgress() {
+    if (!playerProgress) {
+      playerProgress = { xp: 0, level: 1, harvestCount: 0, persisted: false };
+    }
+    return playerProgress;
+  }
+
+  function writeStoredPlayerProgress() {
+    const progress = ensurePlayerProgress();
+    progress.xp = Math.max(0, Number(game.xp) || 0);
+    progress.level = Math.max(1, Math.floor(Number(game.level) || 1));
+    progress.persisted = true;
+    try {
+      localStorage.setItem(
+        PLAYER_PROGRESS_KEY,
+        JSON.stringify({
+          xp: progress.xp,
+          level: progress.level,
+          harvestCount: Math.max(0, Number(progress.harvestCount) || 0)
+        })
+      );
+    } catch {
+      // Storage can be unavailable in private mode; keep the in-memory progress.
+    }
+  }
+
+  function applyPlayerProgressToGame() {
+    const progress = ensurePlayerProgress();
+    if (!progress.persisted) return;
+    game.xp = Math.max(0, Number(progress.xp) || 0);
+    game.level = Math.max(1, Math.floor(Number(progress.level) || 1));
+  }
+
+  function adoptPlayerProgressFromState(state) {
+    if (!state || ensurePlayerProgress().persisted) return;
+    const level = Math.max(1, Math.floor(Number(state.level) || 1));
+    const xp = Math.max(0, Number(state.xp) || 0);
+    if (level <= 1 && xp <= 0) return;
+    playerProgress = {
+      xp,
+      level,
+      harvestCount: Math.max(0, Number(state.harvestCount) || 0),
+      persisted: true
+    };
+    try {
+      localStorage.setItem(
+        PLAYER_PROGRESS_KEY,
+        JSON.stringify({
+          xp: playerProgress.xp,
+          level: playerProgress.level,
+          harvestCount: playerProgress.harvestCount
+        })
+      );
+    } catch {
+      // Keep the in-memory progress.
+    }
+  }
+
+  function recordHarvest(count = 1) {
+    const progress = ensurePlayerProgress();
+    progress.harvestCount = Math.max(0, Number(progress.harvestCount) || 0) + Math.max(0, Number(count) || 0);
+    writeStoredPlayerProgress();
+    renderPlayerProgress();
+    renderProfileUI();
+  }
+
   function addXp(amount, { reason = '', silent = false } = {}) {
     const gain = Math.max(0, Math.floor(Number(amount) || 0));
     if (!gain) return { leveled: false, levels: 0, title: rankForLevel(game.level).title };
@@ -14959,6 +15067,7 @@ body.main-menu-open .scene {
       levels += 1;
       guard += 1;
     }
+    writeStoredPlayerProgress();
     const rank = rankForLevel(game.level);
     updateHeader();
     renderProfileUI();
@@ -15036,7 +15145,8 @@ body.main-menu-open .scene {
     const profileUgc = $('#profileUgc');
     if (profileUgc) {
       const count = Number(game.ugc?.publishedCount) || 0;
-      profileUgc.textContent = `已发布 UGC：${count} 个`;
+      const harvestCount = Number(playerProgress?.harvestCount) || 0;
+      profileUgc.textContent = `已发布 UGC：${count} 个 · 已收获 ${harvestCount} 次`;
     }
   }
 
@@ -15158,6 +15268,20 @@ body.main-menu-open .scene {
     if (!Number.isFinite(Number(game.day)) || Number(game.day) < 1) game.day = 1;
     game.xp = Math.max(0, Number(game.xp) || 0);
     game.level = Math.max(1, Math.floor(Number(game.level) || 1));
+    if (!playerProgress) {
+      playerProgress = loadStoredPlayerProgress() || {
+        xp: 0,
+        level: 1,
+        harvestCount: 0,
+        persisted: false
+      };
+    }
+    if (!playerProgress.persisted) {
+      adoptPlayerProgressFromState(state);
+    }
+    if (playerProgress.persisted) {
+      applyPlayerProgressToGame();
+    }
     game.playerName = String(game.playerName || '青禾农场主');
     game.aiConfig = {
       customApiKey: getCustomAiConfig().customApiKey,
@@ -15248,6 +15372,7 @@ body.main-menu-open .scene {
     normalizeGameState(state);
     game.running = true;
     renderGameAfterStateChange();
+    schedulePlayerStatsSync();
   }
 
   function loadSaveById(id, { silent = false } = {}) {
@@ -15263,6 +15388,7 @@ body.main-menu-open .scene {
       normalizeGameState(save.gameState);
       game.running = !game.tutorial.locked;
       renderGameAfterStateChange();
+      schedulePlayerStatsSync();
       closeLayer(saveManagerModal, true);
       showToast('📂', `已读取「${save.name}」`);
       return true;
@@ -15906,6 +16032,7 @@ body.main-menu-open .scene {
     tutorialAfterHarvest(cropKey, plot.id);
     openHarvestModal({ ...assessment, cropKey, config, statusAtHarvest, plot, batch });
     addXp(Number(config.xp) || 10, { reason: `收获${config.name}` });
+    recordHarvest(1);
   }
 
   function openHarvestModal(result) {
@@ -19781,11 +19908,13 @@ body.main-menu-open .scene {
   const APPWRITE_CHAT_TABLE_ID = 'chat_messages';
   const APPWRITE_STATS_TABLE_ID = 'player_stats';
   const AUTH_USER_KEY = 'qinghe_auth_user';
+  const PLAYER_PROGRESS_KEY = 'qinghe_player_progress';
   let appwriteClient = null;
   let appwriteDatabases = null;
   let appwriteAccount = null;
   let currentAuthUser = null;
   let isLoggedIn = false;
+  let playerProgress = null;
   let customEntities = [];
 
   const CUSTOM_SCHEMAS = {
@@ -22248,7 +22377,8 @@ body.main-menu-open .scene {
     wheelCenter.style.top = `${centerY}px`;
     const display = getCropDisplayState(plot);
     const qualityVisual = cropQualityVisual(plot);
-    wheelCenterIcon.textContent = plot.crop ? qualityVisual?.icon || display?.icon || CROPS[plot.crop].emoji : '🪴';
+    const config = plot.crop ? CROPS[plot.crop] : null;
+    wheelCenterIcon.textContent = plot.crop ? cropVisualIcon(plot, config, display, qualityVisual) : '🪴';
     wheelCenterName.textContent = plot.crop ? display?.label || CROPS[plot.crop].name : '空地';
 
     const availability = plotActionAvailability(plot);
@@ -22463,29 +22593,49 @@ body.main-menu-open .scene {
       target: '.coin-badge'
     },
     {
-      title: '下一天',
-      text: '手动推进一天，结算作物生长、土壤水分、天气和培养箱。时间正常流逝时也会自动进入下一天。',
+      title: '下一天与连续时间',
+      text: '“下一天”会把时间连续推进到下一个 06:00，而不是只改一个数字。途中水分、养分、状态、病虫害计时、春化与菌群都会照常变化；06:00 再生成天气与每日事件。正常播放时，时间也会自动跨日。',
       target: '#nextDayBtn'
     },
     {
       title: '时间控制',
-      text: '播放/暂停时间，滑块可调 1:1 到 1:300。打开面板或事件弹窗时时间会暂停，时间不能倒流。',
+      text: '播放/暂停时间；滑块可在 1:1 到 1:300 之间调速。1:300 时，1 真实秒 = 5 游戏分钟，1 游戏小时 = 12 真实秒。打开详情、图鉴、市场等弹窗时时间会暂停，关闭后继续。',
       target: '.time-console'
     },
     {
       title: '日历与预报',
-      text: '查看月历和未来 3 天天气预报，预报约 90% 准确，偶尔会报错。可以跳转到未来日期，但跳过的日子里作物照常消耗水分和养分，只是不会触发随机病虫害。',
+      text: '查看月历和未来 3 天天气预报，预报约 90% 准确。可以跳转到未来日期，但跳过的日子会按连续时间推进，作物照常消耗水分和养分；出发前先安排好浇水、施肥和实验室。',
       target: '#calendarBtn'
     },
     {
       title: '天气与季节',
-      text: '同一天可能出现两种天气：晴天+雪=太阳雪，晴天+雨=太阳雨。四季温度不同：春 10–22℃、夏 ≥22℃、秋 10–22℃、冬 ≤10℃。夏季容易出现冰雹，冬季有暴雪和冻雨；冰雹会直接损伤作物，使品质和状态下降。降雨分小雨/中雨/大雨/暴雨，雪分小雪/中雪/大雪；晴天、阴天、高温、干旱、霜冻、冰雹、暴雪等天气的水分与状态影响也会在合理区间内波动，同一天各地块差异很小。冬小麦秋播出苗、分蘖越冬，0℃附近地上部近乎停止，根系仍缓慢生长并积累春化作用，返青后再快速长叶、大量分蘖。',
+      text: '天气按日生成、06:00 切换，可能出现太阳雪、太阳雨、晚霜冻、倒春寒、暴雪、冻雨和冰雹。降雨分小雨/中雨/大雨/暴雨，雪分小雪/中雪/大雪；复合天气会叠加影响。天气影响蒸腾、水分、状态、品质和病虫害概率，冬季还要注意冻害。',
       target: '#weatherChip'
     },
     {
       title: '图鉴',
-      text: '查看作物、菌种、农药和肥料的完整属性；翻到卡片背面还能看到各生长阶段的需水需肥、状态图标、品质说明和病虫害扩散规则。',
+      text: '查看作物、菌种、农药和肥料的完整属性；翻到卡片背面还能看到各生长阶段的需水需肥、状态图标、品质说明和病虫害规则。图鉴顶部还有「社区广场」，登录后可浏览和下载其他玩家的自定义条目。',
       target: '#codexBtn'
+    },
+    {
+      title: '状态与抗逆',
+      text: '状态区间：≥80 大丰收，75–80 正常，50–75 减产，30–49 危重，<30 极危。抗逆以 70→50 为 20 点测试基准；轻旱/中旱/轻涝/中涝按作物与阶段有不同耐受小时数，实际扣血 = 20 ÷ 耐受小时数，轻度每小时随机 ±10%，中度 ±20%。50–75 停止生长、可减产收获；30–49 停止生长并在每天 06:00 进行 50% 存活判定；<30 不再秒杀，存在胁迫时每分钟 -0.05。无胁迫时按 +0.0625/h 或 +0.25/h 恢复，79–80 连续 72 小时会触发跃迁。',
+      target: '.farm-grid'
+    },
+    {
+      title: '自定义图鉴与 AI',
+      text: '图鉴里的「＋ 自定义实体」可以创建作物、菌种和肥料。自定义作物使用 1–10 个动态生长阶段，每个阶段可设置名称、持续小时、每小时耗水/N/P/K、抗旱和抗涝小时，并支持增删、改名、上下移动。售价可选手动 custom 或 AI 建议 ai。AI 文献解析是可选功能：需要先在「⚙️ AI 设置」填写自己的 API Key 和 Base URL；未配置时仍可完全手动填写。',
+      target: '#codexBtn'
+    },
+    {
+      title: '等级与个人主页',
+      text: '顶部金币旁是等级与经验条。收获作物、发布 UGC 和社区下载会获得经验；Lv.1–12 使用分段经验表，Lv.13+ 每级递增。点击经验徽章打开个人主页，可查看当前称号、段位奖牌、经验、已发布 UGC 和好友列表。',
+      target: '#playerProfileBtn'
+    },
+    {
+      title: '联网、社区与聊天',
+      text: '游客可以完整单机游玩。只有发布社区图鉴、刷新社区广场、聊天和排行榜需要登录；未登录点击这些入口会弹出联网提示，可直接选择「暂不，继续单机」。登录后右上角显示当前农场主；发布 UGC 会写入作者名，社区卡片显示“作者：昵称”。聊天室每 5 秒刷新一次；排行榜按经验值显示前 50 名。',
+      target: '#topAuthBtn'
     },
     {
       title: '实验室',
@@ -22499,12 +22649,12 @@ body.main-menu-open .scene {
     },
     {
       title: '农田',
-      text: '点击任意地块展开六扇区轮盘：播种、浇水、施肥、施药、接种、收获；点击中心圆查看土壤详情。作物在无胁迫时缓慢恢复；状态进入 79–80 并持续 72 游戏小时，会触发跃迁：状态增长翻倍，上限从 80 提升到 90。',
+      text: '点击任意地块展开操作轮盘：播种、浇水、施肥、施药、接种、收获；点击中心圆查看土壤详情和当前状态。状态 75–80 为正常、50–75 为减产、30–49 为危重、<30 为极危；减产只会在详情和收获结算中显示“减产”，不会替换农田里的作物图标。状态 79–80 且无胁迫累计 72 游戏小时，会触发跃迁：状态增长变为 +0.125/h，上限从 80 提升到 90。',
       target: '#farmGrid'
     },
     {
       title: '结算解释',
-      text: '每天结算后点这里，查看枯死、虫害、病害、缺素、品质变化、实验室结果和强制教学记录的红字解释。',
+      text: '每天 06:00 结算后点这里，查看枯死、危重存活、虫害、病害、缺素、化肥板结、品质变化、实验室结果和教学记录的解释。每个结果都尽量给出“为什么”和下一步建议；不确定时先看结算解释，再决定浇水、施肥或施药。',
       target: '#settlementExplainBtn'
     }
   ];
@@ -22512,12 +22662,12 @@ body.main-menu-open .scene {
   const TUTORIAL_STEPS = {
     1: {
       title: '第 1 步 · 播种大豆',
-      text: '点击任意地块，打开操作轮盘 → 选择“播种” → 播种大豆。大豆是豆科作物，前期需水较少，分枝和开花后磷钾需求上升，可以在图鉴中查看每一阶段的需水需肥。',
+      text: '点击任意地块，打开操作轮盘 → 选择“播种” → 播种大豆。大豆是豆科作物，前期需水较少，分枝和开花后磷钾需求上升。时间按分钟连续推进，土壤水分、养分和状态会实时变化；可以在图鉴中查看每一阶段的需水需肥。',
       target: '.farm-grid'
     },
     2: {
       title: '第 2 步 · 去实验室',
-      text: '大豆缺氮发黄了。打开实验室，按顺序培养一管根瘤菌。无菌流程不能跳步：接种环必须在外焰灼烧至红热，冷却后才能取菌；过热取菌会直接烫死目标菌，导致实验失败。培养有 5% 的自然污染率；失败、污染或衰亡的器皿必须放入灭菌锅处理，否则下一次污染率会升到 20%。培养成功后 3 天不取出，菌体会全部死亡。初始菌种管里的菌不能直接拖去农田，培养出的器皿只能使用 3 次。',
+      text: '大豆缺氮发黄了。打开实验室，按顺序培养一管根瘤菌。无菌流程不能跳步：接种环必须在外焰灼烧至红热，冷却后才能取菌；过热取菌会直接烫死目标菌，导致实验失败。培养有 5% 的自然污染率；失败、污染或衰亡的器皿必须放入灭菌锅处理，否则下一次污染率会升到 20%。培养成功后 3 天不取出，菌体会全部死亡。培养出的器皿只能使用 3 次；菌群活性按小时平滑变化，不适天气不会瞬间清零。',
       target: '#labBtn'
     },
     3: {
@@ -22532,12 +22682,12 @@ body.main-menu-open .scene {
     },
     5: {
       title: '第 5 步 · 处理虫害示范田',
-      text: '这四块是示范田：一块虫害、一块病害，两块正常大豆分别在两块病田两侧。病虫害当天不处理，第二天会向上下左右相邻的作物扩散，正常田也会被感染。先点击高亮的虫害田 → 施药 → 高效氯氟氰菊酯。注意农药安全间隔期：这种药需要等 7 天，残留未降解前市场会拒收。',
+      text: '这四块是示范田：一块虫害、一块病害，两块正常大豆分别在两块病田两侧。虫害有 24 小时潜伏期，潜伏期不扣状态；之后进入 48 小时发作期，每小时 -0.33 状态，并每 6 小时判定一次相邻扩散。先点击高亮的虫害田 → 施药 → 高效氯氟氰菊酯。注意农药安全间隔期：这种药需要等 7 天，残留未降解前市场会拒收。',
       target: '.plot[data-index="16"]'
     },
     6: {
       title: '第 6 步 · 处理病害示范田',
-      text: '虫害已控制。现在点击高亮的病害田 → 施药 → 百菌清。若病虫害已经扩散，旁边的大豆也会出现病虫标记，需要一起处理。百菌清的安全间隔期是 14 天；在安全期内收获的农产品会带有农药残留。',
+      text: '虫害已控制。现在点击高亮的病害田 → 施药 → 百菌清。病害同样有 24 小时潜伏、48 小时发作，并在发作期每 6 小时判定一次扩散；旁边的大豆也可能被感染，需要一起处理。百菌清的安全间隔期是 14 天；在安全期内收获的农产品会带有农药残留。',
       target: '.plot[data-index="20"]'
     },
     7: {
@@ -22547,7 +22697,7 @@ body.main-menu-open .scene {
     },
     8: {
       title: '第 8 步 · 查看土壤鉴定',
-      text: '回到农田，点击任意地块 → 中心圆“详情” → 查看当前生长状态和一日需水/需肥。玉米和小麦是耗氮大户，大豆消耗较多磷钾；缺素会导致减产甚至枯死。化肥能快速补养分，但会降低 OM；OM<30 时土壤板结，养分流失加快。OM>60 时保肥能力增强，作物每日养分消耗降低 15%；有机肥能提升 OM。大豆和玉米相邻会触发正向间作：大豆固氮溢出给玉米，玉米为大豆遮阴，双方耗水减少、玉米增产；小麦和玉米相邻则会恶性竞争，耗氮翻倍、状态暴跌。',
+      text: '回到农田，点击任意地块 → 中心圆“详情” → 查看当前生长状态和一日需水/需肥。玉米和小麦是耗氮大户，大豆消耗较多磷钾；缺素会导致减产甚至枯死。化肥能快速补养分，但施用瞬间 OM -1，随后 48 小时每小时 -0.1，地块会显示“土壤板结中”倒计时；OM<30 时养分流失加快，OM>60 时保肥增强（N/P/K 日耗 ×0.85）。有机肥能提升 OM。大豆和玉米相邻触发正向间作；小麦和玉米相邻则恶性竞争。',
       target: '#farmGrid'
     },
     9: {
@@ -22557,17 +22707,17 @@ body.main-menu-open .scene {
     },
     10: {
       title: '第 10 步 · 抢收大豆',
-      text: '成熟后未及时收获，品质已经下降到 75%，出现 📉 标记。立即点击教学地块 → 收获，把大豆抢收入库。品质 50–79 时售价按 80% 折算，品质 1–49 时只按 30% 折算。',
+      text: '成熟后未及时收获，品质已经下降到 75%，当前处于“减产”状态。减产只会在轮盘详情和收获结算中显示，不会替换农田里的作物图标。立即点击教学地块 → 收获，把大豆抢收入库。品质 50–79 时售价按 80% 折算，品质 1–49 时只按 30% 折算。',
       target: '.plot[data-index="0"]'
     },
     11: {
       title: '第 11 步 · 冬季种玉米',
-      text: '季节已强制切换为冬季，气温骤降到 -8℃ 左右。大豆和玉米是喜温作物，冬季强行播种时种子会因低温难以发芽，幼苗也容易被冻死；建议春季播种，或冬季改种耐寒的冬小麦。冬小麦秋播后出苗、长叶、分蘖越冬；气温接近 0℃ 时地上部生长几乎停止，地下根系仍缓慢生长，并在低温中积累春化作用（vernalization，俗称春花作用）；春季回暖返青后，地上部重新快速长叶、大量分蘖，再进入拔节、抽穗。现在逆季节在教学地块种下玉米，观察冻害结果。',
+      text: '季节已强制切换为冬季，气温骤降到 -8℃ 左右。大豆和玉米是喜温作物，冬季强行播种时种子会因低温难以发芽，幼苗也容易被冻死；建议春季播种，或冬季改种耐寒的冬小麦。冬小麦需要累计 600 游戏小时的低温春化：日平均 0–7℃ 每小时 +1h，-2–0℃ 每小时 +0.5h，高于 7℃ 或低于 -2℃ 暂停。未完成春化时，小麦可以出苗、分蘖、越冬和拔节，但拔节后抽穗会被锁住；完成春化后才解锁抽穗。分蘖/越冬期遇到 0–7℃ 还会进入越冬休眠，状态停止扣减。现在逆季节在教学地块种下玉米，观察冻害结果。',
       target: '.plot[data-index="0"]'
     },
     12: {
       title: '第 12 步 · 冻害演示',
-      text: '玉米幼苗已直接进入地块。点击“下一天”。冬季出现暴雪、冻雨或最低温 ≤-5℃ 时，土壤会进入“受冻”状态：作物停止生长、不消耗 N/P/K，但会按最低温持续损失状态——-2~-5℃ 每天 -3，-5~-10℃ 每天 -8，≤-10℃ 一天内直接冻死；温度回升到 0℃ 以上并连续 1 天后解除受冻。倒春寒的耐寒上限：种子/幼苗期 0℃ 以上玉米最多 4 天、冬小麦 7 天；0℃ 以下玉米 2 天、冬小麦 4 天；拔节期与开花及之后生殖阶段每日 -6，冻害不再减免。',
+      text: '玉米幼苗已直接进入地块。点击“下一天”。冬季出现暴雪、冻雨或最低温 ≤-5℃ 时，土壤会进入“受冻”状态：作物停止生长、不消耗 N/P/K，但会按最低温持续损失状态——-2~-5℃ 每天 -3，-5~-10℃ 每天 -8，≤-10℃ 一天内直接冻死；温度回升到 0℃ 以上并连续 1 天后解除受冻。倒春寒的耐寒上限：种子/幼苗期 0℃ 以上玉米最多 4 天、冬小麦 7 天；0℃ 以下玉米 2 天、冬小麦 4 天；拔节期与开花及之后生殖阶段每日 -6，冻害不再减免。冻害扣到 30–49 会进入危重，06:00 还有 50% 存活判定；低于 30 则进入极危，需要立即处理。',
       target: '#nextDayBtn'
     },
     13: {
@@ -22649,11 +22799,7 @@ body.main-menu-open .scene {
 
   function startTutorial() {
     if (game.tutorial.active) {
-      showToast('🎓', '新手引导正在进行中');
-      return;
-    }
-    if (game.tutorial.completed) {
-      showToast('🎓', '你已经完成过新手引导了');
+      showToast('🎓', '新手引导正在进行中；完成或跳过后可再次开启');
       return;
     }
 
@@ -22661,8 +22807,8 @@ body.main-menu-open .scene {
     if (game.lab.stage !== 0) resetLabBench(true);
     game.lab.strain = 'rhizobium';
     game.lab.temp = 28;
-    game.inventory.seeds.soybean += 5;
-    game.inventory.medium += 3;
+    game.inventory.seeds.soybean = Math.max(5, Number(game.inventory.seeds.soybean) || 0);
+    game.inventory.medium = Math.max(3, Number(game.inventory.medium) || 0);
     game.tutorial.plotId = null;
     game.tutorial.exampleIds = [];
     game.tutorial.locked = false;
@@ -24018,6 +24164,8 @@ body.main-menu-open .scene {
   setFarmTip('今日农事', '干旱会裂土，积水会缺氧；合理施肥与间作，才能养出好收成。');
   restoreCustomEntities();
   updateAuthUI();
+  playerProgress = loadStoredPlayerProgress();
+  if (playerProgress?.persisted) applyPlayerProgressToGame();
   game.aiConfig = {
     customApiKey: getCustomAiConfig().customApiKey,
     customBaseUrl: getCustomAiConfig().customBaseUrl,
