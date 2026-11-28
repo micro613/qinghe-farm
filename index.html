@@ -20879,14 +20879,16 @@ body.main-menu-open .scene {
   const APPWRITE_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
   const APPWRITE_PROJECT_ID = '6b0959b6000d05bbfa2a';
   const APPWRITE_DATABASE_ID_KEY = 'qinghe_appwrite_database_id';
-  const APPWRITE_DATABASE_ID_DEFAULT = 'farm_db';
+  const APPWRITE_DATABASE_ID_DEFAULT = '6b095b7b0022d4759c39';
   let APPWRITE_DATABASE_ID = (() => {
     try {
-      return localStorage.getItem(APPWRITE_DATABASE_ID_KEY) || APPWRITE_DATABASE_ID_DEFAULT;
+      const stored = localStorage.getItem(APPWRITE_DATABASE_ID_KEY);
+      return stored && stored !== 'farm_db' ? stored : APPWRITE_DATABASE_ID_DEFAULT;
     } catch {
       return APPWRITE_DATABASE_ID_DEFAULT;
     }
   })();
+  let databaseIdPromptShown = false;
   const APPWRITE_TABLE_ID = 'ugc_items';
   const APPWRITE_CHAT_TABLE_ID = 'chat_messages';
   const APPWRITE_STATS_TABLE_ID = 'player_stats';
@@ -22148,7 +22150,27 @@ body.main-menu-open .scene {
     const message = String(error?.message || error?.response?.message || '');
     const code = Number(error?.code || error?.response?.code || 0);
     if (/database_not_found/i.test(`${type} ${message}`)) {
-      return `数据库 ${APPWRITE_DATABASE_ID} 不存在：请在 Appwrite 创建 Database ID 为 farm_db 的数据库；如果实际 ID 不同，请到「存档管理 → Appwrite 数据库 ID 设置」填入。`;
+      if (!databaseIdPromptShown) {
+        databaseIdPromptShown = true;
+        window.setTimeout(() => {
+          const current = APPWRITE_DATABASE_ID;
+          const input = window.prompt(
+            `Appwrite 找不到 Database ID「${current}」。\n请粘贴控制台里的真实 Database ID（不是数据库名称）：`,
+            current
+          );
+          if (input && input.trim() && input.trim() !== current) {
+            APPWRITE_DATABASE_ID = input.trim();
+            databaseIdPromptShown = false;
+            try {
+              localStorage.setItem(APPWRITE_DATABASE_ID_KEY, APPWRITE_DATABASE_ID);
+            } catch {}
+            const field = $('#appwriteDbIdInput');
+            if (field) field.value = APPWRITE_DATABASE_ID;
+            showToast('☁️', `Database ID 已改为 ${APPWRITE_DATABASE_ID}，请重试`);
+          }
+        }, 80);
+      }
+      return `数据库 ${APPWRITE_DATABASE_ID} 不存在：请在 Appwrite 创建数据库，或到「存档管理 → Appwrite 数据库 ID 设置」填入真实 Database ID。`;
     }
     if (/collection_not_found|table_not_found/i.test(`${type} ${message}`)) {
       return `${tableId || '数据表'} 不存在：请检查 Table ID 是否完全一致。`;
@@ -25071,6 +25093,7 @@ body.main-menu-open .scene {
       return;
     }
     APPWRITE_DATABASE_ID = nextId;
+    databaseIdPromptShown = false;
     try {
       localStorage.setItem(APPWRITE_DATABASE_ID_KEY, nextId);
     } catch {}
