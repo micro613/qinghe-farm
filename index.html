@@ -20770,7 +20770,7 @@ body.main-menu-open .scene {
   };
   const CUSTOM_ENTITY_KEY = 'qinghe_custom_codex';
   const CUSTOM_AI_KEY = 'qinghe_ai_config';
-  const APPWRITE_ENDPOINT = 'https://cloud.appwrite.io/v1';
+  const APPWRITE_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
   const APPWRITE_PROJECT_ID = '6b0959b6000d05bbfa2a';
   const APPWRITE_DATABASE_ID = 'farm_db';
   const APPWRITE_TABLE_ID = 'ugc_items';
@@ -21419,6 +21419,18 @@ body.main-menu-open .scene {
     });
   }
 
+  async function createEmailSession(account, email, password) {
+    // Appwrite Web SDK 13 uses createEmailSession; newer SDKs renamed it
+    // to createEmailPasswordSession. Support both without hard dependency.
+    if (typeof account.createEmailPasswordSession === 'function') {
+      return account.createEmailPasswordSession(email, password);
+    }
+    if (typeof account.createEmailSession === 'function') {
+      return account.createEmailSession(email, password);
+    }
+    throw new Error('当前 Appwrite SDK 不支持邮箱密码登录方法');
+  }
+
   async function loginWithEmail() {
     const email = $('#authEmail')?.value.trim() || '';
     const password = $('#authPassword')?.value || '';
@@ -21441,7 +21453,7 @@ body.main-menu-open .scene {
     setAuthMessage('');
     try {
       const account = ensureAppwriteAccount();
-      await account.createEmailPasswordSession(email, password);
+      await createEmailSession(account, email, password);
       const user = await account.get();
       storeAuthUser(user);
       setAuthMessage(`登录成功，当前农场主：${user.name || '农场主'}。`, true);
@@ -21490,7 +21502,7 @@ body.main-menu-open .scene {
         name
       );
       created = true;
-      await account.createEmailPasswordSession(email, password);
+      await createEmailSession(account, email, password);
       const profile = await account.get();
       storeAuthUser(profile || user);
       setAuthMessage(`注册成功，当前农场主：${profile?.name || name}。`, true);
