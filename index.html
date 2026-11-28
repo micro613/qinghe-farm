@@ -10339,6 +10339,32 @@ body.lab-dragging {
   line-height: 1;
 }
 
+.save-current-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 7px 0 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  color: #3c6548;
+  font-family: inherit;
+  font-size: 0.58rem;
+  font-weight: 800;
+  background: #f2f7e8;
+  border: 1px solid #c7d8b4;
+  border-radius: 9px;
+}
+
+.save-current-btn:hover {
+  background: #e8f2d8;
+}
+
+.save-current-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .save-manager-list {
   display: grid;
   gap: 8px;
@@ -11186,9 +11212,7 @@ body.main-menu-open .scene {
           <span class="calendar-label">日历</span>
         </button>
         <button id="mainMenuBtn" type="button" class="save-load-btn" aria-label="返回主菜单" title="返回主菜单">🏠<span>主菜单</span></button>
-        <button id="saveGameBtn" type="button" class="save-load-btn" aria-label="保存当前存档">💾<span>保存</span></button>
-        <button id="loadGameBtn" type="button" class="save-load-btn" aria-label="读取存档">📂<span>读取</span></button>
-        <button id="saveManagerBtn" type="button" class="save-load-btn" aria-label="打开存档管理">🗂️<span>存档管理</span></button>
+        <button id="saveManagerBtn" type="button" class="save-load-btn" aria-label="打开存档管理" title="存档管理">🗂️<span>存档管理</span></button>
         <button id="codexBtn" type="button" class="btn-codex inline-flex items-center gap-1.5 rounded-2xl px-2.5 py-2.5 text-[12.5px] font-extrabold sm:gap-2 sm:px-4 sm:text-sm" aria-label="打开实体图鉴">
           <span class="text-[14px] sm:text-[15px]" aria-hidden="true">📖</span>
           <span class="codex-label">图鉴</span>
@@ -11647,6 +11671,7 @@ body.main-menu-open .scene {
         <span class="new-save-plus" aria-hidden="true">＋</span>
         <span>开启新存档</span>
       </button>
+      <button id="saveCurrentBtn" type="button" class="save-current-btn">💾 保存当前存档</button>
 
       <div id="saveManagerList" class="save-manager-list"></div>
       <div class="save-cloud-bar">
@@ -12553,8 +12578,6 @@ body.main-menu-open .scene {
   const batchFertilizerSelect = $('#batchFertilizerSelect');
   const batchBacteriaSelect = $('#batchBacteriaSelect');
   const multiExit = $('#multiExit');
-  const saveGameBtn = $('#saveGameBtn');
-  const loadGameBtn = $('#loadGameBtn');
   const saveManagerBtn = $('#saveManagerBtn');
   const saveManagerModal = $('#saveManagerModal');
   const saveManagerList = $('#saveManagerList');
@@ -15922,12 +15945,19 @@ body.main-menu-open .scene {
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   }
 
+  function stopFriendChatPolling() {
+    window.clearInterval(friendChatTimer);
+    friendChatTimer = 0;
+  }
+
   function openFriendChat(friend) {
     if (!requireOnlineFeature()) return;
     if (!friend?.id) {
       showToast('💬', '好友信息不完整，请刷新好友列表');
       return;
     }
+    stopChatPolling();
+    if (!$('#chatModal').hidden) closeLayer($('#chatModal'), true);
     friendChatFriend = friend;
     const modal = $('#friendChatModal');
     const title = $('#friendChatTitle');
@@ -15940,11 +15970,10 @@ body.main-menu-open .scene {
     if (status) status.textContent = '';
     openLayer(modal, { trigger: document.activeElement });
     loadFriendMessages();
-    window.clearInterval(friendChatTimer);
+    stopFriendChatPolling();
     friendChatTimer = window.setInterval(() => {
       if (modal.hidden) {
-        window.clearInterval(friendChatTimer);
-        friendChatTimer = 0;
+        stopFriendChatPolling();
         return;
       }
       loadFriendMessages();
@@ -21922,13 +21951,17 @@ body.main-menu-open .scene {
     }
   }
 
-  function startChatPolling() {
+  function stopChatPolling() {
     window.clearInterval(chatPollTimer);
+    chatPollTimer = 0;
+  }
+
+  function startChatPolling() {
+    stopChatPolling();
     chatPollTimer = window.setInterval(() => {
       const modal = $('#chatModal');
       if (!modal || modal.hidden) {
-        window.clearInterval(chatPollTimer);
-        chatPollTimer = 0;
+        stopChatPolling();
         return;
       }
       loadChatMessages();
@@ -21937,6 +21970,8 @@ body.main-menu-open .scene {
 
   function openChatModal() {
     if (!requireOnlineFeature()) return;
+    stopFriendChatPolling();
+    if (!$('#friendChatModal').hidden) closeLayer($('#friendChatModal'), true);
     openLayer($('#chatModal'), { trigger: $('#chatBtn') });
     loadChatMessages();
     startChatPolling();
@@ -21977,6 +22012,31 @@ body.main-menu-open .scene {
     } finally {
       if (button) button.disabled = false;
     }
+  }
+
+  function leaderboardErrorMessage(error) {
+    const type = String(error?.type || error?.response?.type || '');
+    const message = String(error?.message || '');
+    const code = Number(error?.code || error?.response?.code || 0);
+    if (/database_not_found/i.test(`${type} ${message}`)) {
+      return '数据库 farm_db 不存在：请先在 Appwrite 创建 Database ID 为 farm_db 的数据库。';
+    }
+    if (/collection_not_found|table_not_found/i.test(`${type} ${message}`)) {
+      return 'player_stats 表不存在：请在 farm_db 中创建 Table ID 为 player_stats 的表。';
+    }
+    if (/attribute_not_found|unknown attribute/i.test(`${type} ${message}`)) {
+      return 'player_stats 字段不完整：需要 username / xp / level 三个字段。';
+    }
+    if (/index_not_found|index.*required|attribute.*not indexed|index.*does not exist|requires an index|no index/i.test(`${type} ${message}`)) {
+      return '缺少 xp 排序索引：请给 player_stats.xp 建 DESC 索引后再打开排行榜。';
+    }
+    if (/general_unauthorized_scope|user_unauthorized|missing scopes|permission/i.test(`${type} ${message}`)) {
+      return '没有读取 player_stats 的权限：请把 Read 权限开放给 Users / Any。';
+    }
+    if (code === 401) {
+      return '排行榜需要登录账号，且 player_stats 需要可读权限。';
+    }
+    return `网络波动，请稍后再试${type ? `（${type}）` : code ? `（${code}）` : ''}`;
   }
 
   async function loadLeaderboard() {
@@ -22021,7 +22081,7 @@ body.main-menu-open .scene {
         .join('');
     } catch (error) {
       console.error('Leaderboard failed:', error);
-      box.innerHTML = '<p class="chat-empty">网络波动，请稍后再试</p>';
+      box.innerHTML = `<p class="chat-empty">${leaderboardErrorMessage(error)}</p>`;
     }
   }
 
@@ -24849,8 +24909,13 @@ body.main-menu-open .scene {
 
   $('#calendarBtn').addEventListener('click', openCalendar);
 
-  saveGameBtn.addEventListener('click', () => saveGame());
-  loadGameBtn.addEventListener('click', requestLoadGame);
+  $('#saveCurrentBtn')?.addEventListener('click', () => {
+    if (currentSaveId == null) {
+      showToast('💾', '请先读取或新建一个存档');
+      return;
+    }
+    saveGame();
+  });
   saveManagerBtn.addEventListener('click', () => openSaveManager());
   saveManagerClose.addEventListener('click', closeSaveManager);
   newSaveBtn.addEventListener('click', createNewSave);
@@ -25070,6 +25135,12 @@ body.main-menu-open .scene {
   });
   $('#chatBtn')?.addEventListener('click', openChatModal);
   $('#leaderboardBtn')?.addEventListener('click', openLeaderboard);
+  document.querySelectorAll('[data-close="chatModal"]').forEach((button) => {
+    button.addEventListener('click', stopChatPolling);
+  });
+  document.querySelectorAll('[data-close="friendChatModal"]').forEach((button) => {
+    button.addEventListener('click', stopFriendChatPolling);
+  });
   $('#chatSendBtn')?.addEventListener('click', sendChatMessage);
   $('#chatInput')?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
