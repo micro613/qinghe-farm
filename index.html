@@ -26911,7 +26911,7 @@ body.main-menu-open .scene {
       setFriendStatus(`已向「${target.name}」发送好友申请`, 'ok');
     } catch (error) {
       console.error('Friend request failed:', error);
-      setFriendStatus('好友申请发送失败：请确认 friend_links 集合与权限已配置', 'error');
+      setFriendStatus(`好友申请发送失败：${appwriteDataErrorMessage(error, 'friend_links')}`, 'error');
     } finally {
       if (button) button.disabled = false;
     }
